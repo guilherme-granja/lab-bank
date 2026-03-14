@@ -6,19 +6,18 @@ use Illuminate\Support\ServiceProvider;
 
 class AppServiceProvider extends ServiceProvider
 {
-    /**
-     * Register any application services.
-     */
     public function register(): void
     {
         //
     }
 
-    /**
-     * Bootstrap any application services.
-     */
     public function boot(): void
     {
-        //
+        $this->loadMigrationsFrom([
+            database_path('migrations/accounts'),
+            database_path('migrations/cards'),
+            database_path('migrations/identity'),
+            database_path('migrations/investments'),
+        ]);
     }
 }
