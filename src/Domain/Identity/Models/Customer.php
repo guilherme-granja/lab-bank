@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Str;
 use Spatie\ModelStates\Exceptions\CouldNotPerformTransition;
 use Spatie\ModelStates\HasStates;
 use Src\Application\Identity\DataObjects\RegisterCustomerData;
@@ -67,6 +68,7 @@ class Customer extends Model
     public static function register(RegisterCustomerData $customerData): self
     {
         $customer = new Customer();
+        $customer->id = Str::uuid()->toString();
         $customer->full_name = $customerData->fullName;
         $customer->cpf = new Cpf($customerData->cpf)->digits();
         $customer->email = $customerData->email;

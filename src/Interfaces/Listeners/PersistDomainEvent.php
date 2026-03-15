@@ -13,6 +13,6 @@ readonly class PersistDomainEvent
 
     public function handle($event): void
     {
-        $this->eventStore->storeAll([$event]);
+        $this->eventStore->storeAll([$event->domainEvent]);
     }
 }

@@ -84,6 +84,8 @@ RUN composer install \
 
 COPY . .
 
+RUN npm install --save-dev chokidar
+
 RUN php artisan package:discover
 
 COPY docker/local/start-container /usr/local/bin/start-container

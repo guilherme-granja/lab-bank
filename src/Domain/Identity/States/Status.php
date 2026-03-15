@@ -18,6 +18,12 @@ abstract class Status extends State
     public static function config(): StateConfig
     {
         return parent::config()
+            ->registerState([
+                PendingKyc::class,
+                Active::class,
+                Blocked::class,
+                Closed::class,
+            ])
             ->default(PendingKyc::class)
             ->allowTransition(PendingKyc::class, Active::class)
             ->allowTransition(Active::class, Blocked::class)

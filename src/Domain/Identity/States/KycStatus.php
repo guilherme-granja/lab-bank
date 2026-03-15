@@ -19,6 +19,13 @@ abstract class KycStatus extends State
     public static function config(): StateConfig
     {
         return parent::config()
+            ->registerState([
+                Pending::class,
+                Processing::class,
+                Approved::class,
+                Rejected::class,
+                Expired::class,
+            ])
             ->default(Pending::class)
             ->allowTransition(Pending::class, Processing::class)
             ->allowTransition(Processing::class, Approved::class)

@@ -2,6 +2,7 @@
 
 namespace Src\Application\Identity\Handlers;
 
+use Illuminate\Support\Facades\DB;
 use Src\Application\Identity\DataObjects\CustomerData;
 use Src\Application\Identity\DataObjects\RegisterCustomerData;
 use Src\Domain\Identity\Contracts\CustomerRepositoryContract;
@@ -31,8 +32,13 @@ readonly class RegisterCustomer
             exception: EmailAlreadyExistsException::class
         );
 
-        $customer = Customer::register($customerData);
-        $this->customerRepository->save($customer);
+        $customer = DB::connection('identity')
+            ->transaction(function () use ($customerData) {
+                $customer = Customer::register($customerData);
+                $this->customerRepository->save($customer);
+
+                return $customer;
+            });
 
         return CustomerData::fromModel($customer->refresh());
     }
