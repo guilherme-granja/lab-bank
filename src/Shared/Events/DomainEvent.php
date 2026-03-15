@@ -9,6 +9,7 @@ abstract class DomainEvent
     public readonly string $eventId;
     public readonly string $occurredAt;
     public readonly string $eventType;
+    public readonly ?array $metadata;
     private int $version = 0;
 
     public function __construct(
@@ -18,6 +19,7 @@ abstract class DomainEvent
         $this->eventId = Str::uuid()->toString();
         $this->occurredAt = now()->toIso8601String();
         $this->eventType = $this->resolveEventType();
+        $this->metadata = null;
     }
 
     private function resolveEventType(): string
