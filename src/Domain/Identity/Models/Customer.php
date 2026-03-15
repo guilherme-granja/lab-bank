@@ -9,7 +9,9 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Carbon;
 use Spatie\ModelStates\Exceptions\CouldNotPerformTransition;
 use Spatie\ModelStates\HasStates;
+use Src\Application\Identity\DataObjects\RegisterCustomerData;
 use Src\Domain\Identity\Events\Customer\CustomerBlocked;
+use Src\Domain\Identity\Events\Customer\CustomerRegistered;
 use Src\Domain\Identity\Events\Customer\KycApproved;
 use Src\Domain\Identity\Events\Customer\KycRejected;
 use Src\Domain\Identity\Observers\CustomerObserver;
@@ -20,6 +22,7 @@ use Src\Domain\Identity\States\Kyc\Processing;
 use Src\Domain\Identity\States\Kyc\Rejected;
 use Src\Domain\Identity\States\KycStatus;
 use Src\Domain\Identity\States\Status;
+use Src\Domain\Identity\ValueObjects\Cpf;
 use Src\Shared\Traits\AggregateRoot;
 
 /**
@@ -30,6 +33,7 @@ use Src\Shared\Traits\AggregateRoot;
  * @property string $phone
  * @property Carbon $birth_date
  * @property string $mother_name
+ * @property string $nationality
  * @property KycStatus $kyc_status
  * @property Status $status
  * @property string $blocked_reason
@@ -58,6 +62,22 @@ class Customer extends Model
             'updated_at' => 'datetime',
             'deleted_at' => 'datetime',
         ];
+    }
+
+    public static function register(RegisterCustomerData $customerData): self
+    {
+        $customer = new Customer();
+        $customer->full_name = $customerData->fullName;
+        $customer->cpf = new Cpf($customerData->cpf)->digits();
+        $customer->email = $customerData->email;
+        $customer->phone = $customerData->phone;
+        $customer->birth_date = $customerData->birthDate;
+        $customer->mother_name = $customerData->motherName;
+        $customer->nationality = $customerData->nationality;
+
+        $customer->recordEvent(new CustomerRegistered($customer));
+
+        return $customer;
     }
 
     /**
