@@ -2,6 +2,7 @@
 
 namespace Src\Domain\Identity\Models;
 
+use Illuminate\Database\Eloquent\Attributes\ObservedBy;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
@@ -11,6 +12,7 @@ use Spatie\ModelStates\HasStates;
 use Src\Domain\Identity\Events\Customer\CustomerBlocked;
 use Src\Domain\Identity\Events\Customer\KycApproved;
 use Src\Domain\Identity\Events\Customer\KycRejected;
+use Src\Domain\Identity\Observers\CustomerObserver;
 use Src\Domain\Identity\States\Customer\Active;
 use Src\Domain\Identity\States\Customer\Blocked;
 use Src\Domain\Identity\States\Kyc\Approved;
@@ -35,6 +37,7 @@ use Src\Shared\Traits\AggregateRoot;
  * @property Carbon $updated_at
  * @property Carbon $deleted_at
  */
+#[ObservedBy(CustomerObserver::class)]
 class Customer extends Model
 {
     use SoftDeletes;

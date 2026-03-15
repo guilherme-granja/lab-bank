@@ -8,9 +8,6 @@ use Throwable;
 
 class EventStoreRepository
 {
-    /**
-     * @throws Throwable
-     */
     public function storeAll(array $events): void
     {
         DB::connection('identity')
