@@ -27,6 +27,7 @@ use Src\Shared\Traits\AggregateRoot;
  * @property string $email
  * @property string $phone
  * @property Carbon $birth_date
+ * @property string $mother_name
  * @property KycStatus $kyc_status
  * @property Status $status
  * @property string $blocked_reason

@@ -23,6 +23,7 @@ return new class extends Migration
             $table->string('email')->unique();
             $table->string('phone', 20);
             $table->date('birth_date');
+            $table->string('mother_name');
             $table->string('nationality', 3)->default('BRA');
             $table->string('kyc_status');
             $table->string('status');
