@@ -12,7 +12,7 @@ WORKDIR /var/www/html
 ENV DEBIAN_FRONTEND=noninteractive
 ENV TZ=UTC
 
-ENV SUPERVISOR_PHP_COMMAND="/usr/bin/php -d variables_order=EGPCS artisan octane:start --server=swoole --host=0.0.0.0 --port=8000 --watch"
+ENV SUPERVISOR_PHP_COMMAND="/usr/bin/php -d variables_order=EGPCS artisan octane:start --server=swoole --host=0.0.0.0 --port=80 --watch"
 ENV SUPERVISOR_PHP_USER="sail"
 
 ENV PHP_OPCACHE_VALIDATE_TIMESTAMPS=1 \
@@ -84,6 +84,8 @@ RUN composer install \
 
 COPY . .
 
+RUN npm install --save-dev chokidar
+
 RUN php artisan package:discover
 
 COPY docker/local/start-container /usr/local/bin/start-container
@@ -92,6 +94,6 @@ COPY docker/local/php.ini /etc/php/8.4/cli/conf.d/99-sail.ini
 
 RUN chmod +x /usr/local/bin/start-container
 
-EXPOSE 8000
+EXPOSE 8000/tcp
 
 ENTRYPOINT ["start-container"]

@@ -60,6 +60,18 @@ return [
             'report' => false,
         ],
 
+        'minio' => [
+            'driver' => 's3',
+            'endpoint' => env('MINIO_ENDPOINT', 'http://192.168.1.73:9000'),
+            'url' => env('MINIO_URL', 'http://192.168.1.73:9000/kyc-documents'),
+            'use_path_style_endpoint' => true,
+            'key' => env('MINIO_ROOT_USER', 'sail'),
+            'secret' => env('MINIO_ROOT_PASSWORD', 'password'),
+            'region' => 'us-east-1',
+            'bucket' => env('MINIO_BUCKET', 'kyc-documents'),
+            'throw' => true,
+            'report' => true,
+        ]
     ],
 
     /*
