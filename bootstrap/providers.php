@@ -1,10 +1,7 @@
 <?php
 
-use App\Providers\AppServiceProvider;
-use Src\Infrastructure\Providers\IdentityServiceProvider;
-
 return [
-    AppServiceProvider::class,
-
-    IdentityServiceProvider::class,
+    App\Providers\AppServiceProvider::class,
+    App\Providers\TelescopeServiceProvider::class,
+    Src\Infrastructure\Providers\IdentityServiceProvider::class,
 ];

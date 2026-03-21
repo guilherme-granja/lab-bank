@@ -20,6 +20,7 @@ class AppServiceProvider extends ServiceProvider
             database_path('migrations/cards'),
             database_path('migrations/identity'),
             database_path('migrations/investments'),
+            database_path('migrations/app'),
         ]);
     }
 }
