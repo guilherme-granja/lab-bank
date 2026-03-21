@@ -4,7 +4,7 @@ namespace Src\Domain\Identity\Models;
 
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Support\Carbon;
 use Spatie\ModelStates\HasStates;
 use Src\Domain\Identity\Enums\Kyc\DocumentType;
@@ -26,6 +26,8 @@ use Src\Domain\Identity\States\KycVerification as KycVerificationState;
  * @property Carbon|null $reviewed_at
  * @property Carbon $created_at
  * @property Carbon $updated_at
+ *
+ * @property-read Customer $customer
  */
 class KycVerification extends Model
 {
@@ -45,5 +47,27 @@ class KycVerification extends Model
             'updated_at' => 'datetime',
             'deleted_at' => 'datetime',
         ];
+    }
+
+    public function customer(): BelongsTo
+    {
+        return $this->belongsTo(Customer::class);
+    }
+
+    public static function register(
+        array $paths,
+        string $customerId,
+        DocumentType $documentType,
+        string $documentNumber,
+    ): self {
+        $kycVerification = new self();
+        $kycVerification->customer_id = $customerId;
+        $kycVerification->document_type = $documentType;
+        $kycVerification->document_number = $documentNumber;
+        $kycVerification->document_front_url = $paths['document_front_url'];
+        $kycVerification->document_back_url = $paths['document_back_url'];
+        $kycVerification->selfie_url = $paths['document_selfie_url'];
+
+        return $kycVerification;
     }
 }

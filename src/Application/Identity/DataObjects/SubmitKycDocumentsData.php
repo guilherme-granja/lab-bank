@@ -14,6 +14,7 @@ class SubmitKycDocumentsData extends Data
     public function __construct(
         public string $customerId,
         public DocumentType $documentType,
+        public string $documentNumber,
         public UploadedFile $documentFront,
         public ?UploadedFile $documentBack,
         public UploadedFile $selfie,

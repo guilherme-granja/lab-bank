@@ -3,8 +3,10 @@
 namespace Src\Domain\Identity\Models;
 
 use Illuminate\Database\Eloquent\Attributes\ObservedBy;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Str;
@@ -19,6 +21,7 @@ use Src\Domain\Identity\Observers\CustomerObserver;
 use Src\Domain\Identity\States\Customer\Active;
 use Src\Domain\Identity\States\Customer\Blocked;
 use Src\Domain\Identity\States\Kyc\Approved;
+use Src\Domain\Identity\States\Kyc\Pending;
 use Src\Domain\Identity\States\Kyc\Processing;
 use Src\Domain\Identity\States\Kyc\Rejected;
 use Src\Domain\Identity\States\KycStatus;
@@ -41,6 +44,8 @@ use Src\Shared\Traits\AggregateRoot;
  * @property Carbon $created_at
  * @property Carbon $updated_at
  * @property Carbon $deleted_at
+ *
+ * @property-read Collection $kycVerifications
  */
 #[ObservedBy(CustomerObserver::class)]
 class Customer extends Model
@@ -65,10 +70,14 @@ class Customer extends Model
         ];
     }
 
+    public function kycVerifications(): HasMany|self
+    {
+        return $this->hasMany(KycVerification::class);
+    }
+
     public static function register(RegisterCustomerData $customerData): self
     {
-        $customer = new Customer();
-        $customer->id = Str::uuid()->toString();
+        $customer = new self();
         $customer->full_name = $customerData->fullName;
         $customer->cpf = new Cpf($customerData->cpf)->digits();
         $customer->email = $customerData->email;
@@ -121,5 +130,11 @@ class Customer extends Model
     {
         return $this->kyc_status instanceof Approved &&
             $this->status instanceof Active;
+    }
+
+    public function canSubmmitKyc(): bool
+    {
+        return $this->kyc_status instanceof Pending ||
+            $this->kyc_status instanceof Rejected;
     }
 }

@@ -9,7 +9,7 @@ class CpfAlreadyExistsException extends DomainException
     public function __construct(string $cpf)
     {
         parent::__construct(
-            message: __('validations.exceptions.cpf_already_exists', [
+            message: __('domain/identity/validations.exceptions.cpf_already_exists', [
                 'cpf' => $cpf,
             ])
         );
