@@ -18,4 +18,12 @@ class EloquentKycVerificationRepository implements KycVerificationRepositoryCont
             ->where('customer_id', $customerId)
             ->first();
     }
+
+    public function findActiveByCustomerId(string $customerId): ?KycVerification
+    {
+        return KycVerification::query()
+            ->where('customer_id', $customerId)
+            ->whereStates(['pending', 'processing'])
+            ->first();
+    }
 }

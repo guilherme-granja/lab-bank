@@ -13,6 +13,7 @@ use Illuminate\Support\Str;
 use Spatie\ModelStates\Exceptions\CouldNotPerformTransition;
 use Spatie\ModelStates\HasStates;
 use Src\Application\Identity\DataObjects\RegisterCustomerData;
+use Src\Domain\Identity\Events\Customer\CustomerActivated;
 use Src\Domain\Identity\Events\Customer\CustomerBlocked;
 use Src\Domain\Identity\Events\Customer\CustomerRegistered;
 use Src\Domain\Identity\Events\Customer\KycApproved;
@@ -136,5 +137,14 @@ class Customer extends Model
     {
         return $this->kyc_status instanceof Pending ||
             $this->kyc_status instanceof Rejected;
+    }
+
+    /**
+     * @throws CouldNotPerformTransition
+     */
+    public function activateAccount(): void
+    {
+        $this->status->transitionTo(Active::class);
+        $this->recordEvent(new CustomerActivated($this));
     }
 }

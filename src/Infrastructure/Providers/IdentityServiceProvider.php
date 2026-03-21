@@ -6,6 +6,7 @@ use Illuminate\Support\Facades\Event;
 use Illuminate\Support\ServiceProvider;
 use Src\Domain\Identity\Contracts\CustomerRepositoryContract;
 use Src\Domain\Identity\Contracts\KycVerificationRepositoryContract;
+use Src\Domain\Identity\Events\Customer\CustomerActivated;
 use Src\Infrastructure\Persistence\Identity\EloquentCustomerRepository;
 use Src\Infrastructure\Persistence\Identity\EloquentKycVerificationRepository;
 use Src\Interfaces\Events\Identity\CustomerWasBlocked;
@@ -27,6 +28,7 @@ class IdentityServiceProvider extends ServiceProvider
         Event::listen([
             CustomerWasRegistered::class,
             CustomerWasBlocked::class,
+            CustomerActivated::class,
             KycWasApproved::class,
             KycWasRejected::class,
         ], PersistDomainEvent::class);
