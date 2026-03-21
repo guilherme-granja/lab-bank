@@ -15,6 +15,7 @@
         "laravel/sanctum": "^4.0",
         "laravel/tinker": "^2.10.1",
         "laravellegends/pt-br-validator": "^12.2",
+        "league/flysystem-aws-s3-v3": "^3.0",
         "spatie/laravel-data": "^4.20",
         "spatie/laravel-model-states": "^2.13"
     },
