@@ -7,5 +7,6 @@ return [
         'customer_not_found' => 'Cliente não encontrado.',
         'customer_cant_submit' => 'Documentos não podem ser submetidos no status: :status',
         'document_upload' => 'Ocorreu um erro ao fazer upload do documento: :document_type.',
+        'kyc_verification_not_found' => 'Kyc Verification não encontrado.',
     ],
 ];

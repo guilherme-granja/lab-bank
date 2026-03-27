@@ -23,7 +23,7 @@ class EloquentKycVerificationRepository implements KycVerificationRepositoryCont
     {
         return KycVerification::query()
             ->where('customer_id', $customerId)
-            ->whereStates(['pending', 'processing'])
+            ->whereState('status', ['pending', 'processing'])
             ->first();
     }
 }

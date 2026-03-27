@@ -48,9 +48,7 @@ readonly class SubmitKycDocuments
             documentNumber: $submitKycDocumentsData->documentNumber,
         );
 
-        DB::connection('identity')->transaction(function () use ($customer, $kycVerification) {
-            $customer->startKycReview();
-            $this->customerRepository->save($customer);
+        DB::connection('identity')->transaction(function () use ($kycVerification) {
             $this->kycVerificationRepository->save($kycVerification);
         });
     }

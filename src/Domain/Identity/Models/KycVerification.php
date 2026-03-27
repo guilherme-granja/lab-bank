@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Support\Carbon;
+use Spatie\ModelStates\Exceptions\CouldNotPerformTransition;
 use Spatie\ModelStates\HasStates;
 use Src\Domain\Identity\Enums\Kyc\DocumentType;
 use Src\Domain\Identity\States\KycVerification as KycVerificationState;
@@ -69,5 +70,32 @@ class KycVerification extends Model
         $kycVerification->selfie_url = $paths['document_selfie_url'];
 
         return $kycVerification;
+    }
+
+    /**
+     * @throws CouldNotPerformTransition
+     */
+    public function approve(): void
+    {
+        $this->status->transitionTo(KycVerificationState\Approved::class);
+        $this->reviewed_at = now();
+    }
+
+    /**
+     * @throws CouldNotPerformTransition
+     */
+    public function reject(string $reason): void
+    {
+        $this->status->transitionTo(KycVerificationState\Rejected::class);
+        $this->reviewed_at = now();
+        $this->rejection_reason = $reason;
+    }
+
+    /**
+     * @throws CouldNotPerformTransition
+     */
+    public function startReview(): void
+    {
+        $this->status->transitionTo(KycVerificationState\Processing::class);
     }
 }

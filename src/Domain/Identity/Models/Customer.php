@@ -79,6 +79,7 @@ class Customer extends Model
     public static function register(RegisterCustomerData $customerData): self
     {
         $customer = new self();
+        $customer->id = $customer->newUniqueId();
         $customer->full_name = $customerData->fullName;
         $customer->cpf = new Cpf($customerData->cpf)->digits();
         $customer->email = $customerData->email;
