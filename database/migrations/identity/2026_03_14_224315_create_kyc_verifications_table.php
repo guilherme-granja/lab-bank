@@ -3,7 +3,7 @@
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
-use Src\Domain\Identity\Enums\Kyc\DocumentType;
+use Src\Domain\Identity\Enums\Kyc\DocumentTypeEnum;
 
 return new class extends Migration
 {
@@ -24,7 +24,7 @@ return new class extends Migration
                 ->cascadeOnDelete();
 
             $table->string('status');
-            $table->enum('document_type', DocumentType::values());
+            $table->enum('document_type', DocumentTypeEnum::values());
             $table->string('document_number');
             $table->string('document_front_url');
             $table->string('document_back_url')->nullable();

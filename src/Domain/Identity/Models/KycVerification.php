@@ -8,14 +8,14 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Support\Carbon;
 use Spatie\ModelStates\Exceptions\CouldNotPerformTransition;
 use Spatie\ModelStates\HasStates;
-use Src\Domain\Identity\Enums\Kyc\DocumentType;
+use Src\Domain\Identity\Enums\Kyc\DocumentTypeEnum;
 use Src\Domain\Identity\States\KycVerification as KycVerificationState;
 
 /**
  * @property string $id
  * @property string $customer_id
  * @property KycVerificationState $status
- * @property DocumentType $document_type
+ * @property DocumentTypeEnum $document_type
  * @property string $document_number
  * @property string $document_front_url
  * @property string|null $document_back_url
@@ -42,7 +42,7 @@ class KycVerification extends Model
         return [
             'id' => 'string',
             'status' => KycVerificationState::class,
-            'document_type' => DocumentType::class,
+            'document_type' => DocumentTypeEnum::class,
             'confidence_score' => 'float',
             'reviewed_at' => 'datetime',
             'updated_at' => 'datetime',
@@ -56,10 +56,10 @@ class KycVerification extends Model
     }
 
     public static function register(
-        array $paths,
-        string $customerId,
-        DocumentType $documentType,
-        string $documentNumber,
+        array            $paths,
+        string           $customerId,
+        DocumentTypeEnum $documentType,
+        string           $documentNumber,
     ): self {
         $kycVerification = new self();
         $kycVerification->customer_id = $customerId;

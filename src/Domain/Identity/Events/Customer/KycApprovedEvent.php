@@ -2,15 +2,14 @@
 
 namespace Src\Domain\Identity\Events\Customer;
 
+use Illuminate\Support\Carbon;
 use Src\Domain\Identity\Models\Customer;
 use Src\Shared\Events\DomainEvent;
 
-class KycRejected extends DomainEvent
+class KycApprovedEvent extends DomainEvent
 {
-    public function __construct(
-        protected Customer $customer,
-        protected string $reason,
-    ) {
+    public function __construct(protected Customer $customer)
+    {
         parent::__construct(
             $this->customer->id,
             class_basename($this->customer::class)
@@ -21,7 +20,7 @@ class KycRejected extends DomainEvent
     {
         return [
             'email' => $this->customer->email,
-            'reason' => $this->reason,
+            'approved_at' => $this->occurredAt,
         ];
     }
 }

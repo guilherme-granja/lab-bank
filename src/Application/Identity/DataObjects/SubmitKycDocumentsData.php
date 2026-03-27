@@ -11,21 +11,21 @@ use Spatie\LaravelData\Attributes\Validation\Mimes;
 use Spatie\LaravelData\Attributes\Validation\MimeTypes;
 use Spatie\LaravelData\Data;
 use Spatie\LaravelData\Mappers\SnakeCaseMapper;
-use Src\Domain\Identity\Enums\Kyc\DocumentType;
+use Src\Domain\Identity\Enums\Kyc\DocumentTypeEnum;
 
 #[MapName(SnakeCaseMapper::class)]
 class SubmitKycDocumentsData extends Data
 {
     public function __construct(
         #[FromRouteParameter('customerId')]
-        public string $customerId,
-        public DocumentType $documentType,
-        public string $documentNumber,
+        public string           $customerId,
+        public DocumentTypeEnum $documentType,
+        public string           $documentNumber,
         #[File, Mimes('jpg', 'jpeg', 'png', 'pdf'), MimeTypes('image/jpeg', 'image/png', 'application/pdf'), Max(5120)]
-        public UploadedFile $documentFront,
+        public UploadedFile     $documentFront,
         #[File, Mimes('jpg', 'jpeg', 'png', 'pdf'), MimeTypes('image/jpeg', 'image/png', 'application/pdf'), Max(5120)]
-        public ?UploadedFile $documentBack,
+        public ?UploadedFile    $documentBack,
         #[File, Mimes('jpg', 'jpeg', 'png'), MimeTypes('image/jpeg', 'image/png'), Max(2048)]
-        public UploadedFile $selfie,
+        public UploadedFile     $selfie,
     ) {}
 }

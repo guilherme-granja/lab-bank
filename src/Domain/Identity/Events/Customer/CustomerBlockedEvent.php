@@ -5,7 +5,7 @@ namespace Src\Domain\Identity\Events\Customer;
 use Src\Domain\Identity\Models\Customer;
 use Src\Shared\Events\DomainEvent;
 
-class CustomerBlocked extends DomainEvent
+class CustomerBlockedEvent extends DomainEvent
 {
     public function __construct(
         protected Customer $customer,

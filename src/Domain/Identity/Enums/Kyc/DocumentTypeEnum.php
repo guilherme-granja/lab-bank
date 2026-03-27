@@ -4,7 +4,7 @@ namespace Src\Domain\Identity\Enums\Kyc;
 
 use Src\Shared\Traits\Enum\ToArray;
 
-enum DocumentType: string
+enum DocumentTypeEnum: string
 {
     use ToArray;
 

@@ -13,11 +13,11 @@ use Illuminate\Support\Str;
 use Spatie\ModelStates\Exceptions\CouldNotPerformTransition;
 use Spatie\ModelStates\HasStates;
 use Src\Application\Identity\DataObjects\RegisterCustomerData;
-use Src\Domain\Identity\Events\Customer\CustomerActivated;
-use Src\Domain\Identity\Events\Customer\CustomerBlocked;
-use Src\Domain\Identity\Events\Customer\CustomerRegistered;
-use Src\Domain\Identity\Events\Customer\KycApproved;
-use Src\Domain\Identity\Events\Customer\KycRejected;
+use Src\Domain\Identity\Events\Customer\CustomerActivatedEvent;
+use Src\Domain\Identity\Events\Customer\CustomerBlockedEvent;
+use Src\Domain\Identity\Events\Customer\CustomerRegisteredEvent;
+use Src\Domain\Identity\Events\Customer\KycApprovedEvent;
+use Src\Domain\Identity\Events\Customer\KycRejectedEvent;
 use Src\Domain\Identity\Observers\CustomerObserver;
 use Src\Domain\Identity\States\Customer\Active;
 use Src\Domain\Identity\States\Customer\Blocked;
@@ -88,7 +88,7 @@ class Customer extends Model
         $customer->mother_name = $customerData->motherName;
         $customer->nationality = $customerData->nationality;
 
-        $customer->recordEvent(new CustomerRegistered($customer));
+        $customer->recordEvent(new CustomerRegisteredEvent($customer));
 
         return $customer;
     }
@@ -107,7 +107,7 @@ class Customer extends Model
     public function approveKyc(): void
     {
         $this->kyc_status->transitionTo(Approved::class);
-        $this->recordEvent(new KycApproved($this));
+        $this->recordEvent(new KycApprovedEvent($this));
     }
 
     /**
@@ -116,7 +116,7 @@ class Customer extends Model
     public function rejectKyc(string $reason): void
     {
         $this->kyc_status->transitionTo(Rejected::class);
-        $this->recordEvent(new KycRejected($this, $reason));
+        $this->recordEvent(new KycRejectedEvent($this, $reason));
     }
 
     /**
@@ -125,7 +125,7 @@ class Customer extends Model
     public function block(string $reason): void
     {
         $this->status->transitionTo(Blocked::class);
-        $this->recordEvent(new CustomerBlocked($this, $reason));
+        $this->recordEvent(new CustomerBlockedEvent($this, $reason));
     }
 
     public function canOperate(): bool
@@ -146,6 +146,6 @@ class Customer extends Model
     public function activateAccount(): void
     {
         $this->status->transitionTo(Active::class);
-        $this->recordEvent(new CustomerActivated($this));
+        $this->recordEvent(new CustomerActivatedEvent($this));
     }
 }

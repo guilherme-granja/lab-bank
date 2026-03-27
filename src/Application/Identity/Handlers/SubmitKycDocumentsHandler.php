@@ -14,7 +14,7 @@ use Src\Domain\Identity\Models\KycVerification;
 use Src\Infrastructure\Storage\KycDocumentStorage;
 use Throwable;
 
-readonly class SubmitKycDocuments
+readonly class SubmitKycDocumentsHandler
 {
     public function __construct(
         protected CustomerRepositoryContract $customerRepository,

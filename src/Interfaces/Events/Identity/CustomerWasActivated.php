@@ -3,7 +3,7 @@
 namespace Src\Interfaces\Events\Identity;
 
 use Illuminate\Foundation\Events\Dispatchable;
-use Src\Domain\Identity\Events\Customer\CustomerActivated;
+use Src\Domain\Identity\Events\Customer\CustomerActivatedEvent;
 use Src\Domain\Identity\Models\Customer;
 
 class CustomerWasActivated
@@ -11,7 +11,7 @@ class CustomerWasActivated
     use Dispatchable;
 
     public function __construct(
-        public readonly Customer $customer,
-        public readonly CustomerActivated $domainEvent,
+        public readonly Customer               $customer,
+        public readonly CustomerActivatedEvent $domainEvent,
     ) {}
 }
