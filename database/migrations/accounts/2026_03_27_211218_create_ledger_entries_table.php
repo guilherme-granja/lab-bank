@@ -3,7 +3,7 @@
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
-use Src\Domain\Accounts\Enums\LedgerEntriesTypeEnum;
+use Src\Domain\Accounts\Enums\LedgerEntryTypeEnum;
 use Src\Domain\Accounts\Enums\LedgerEntryCategory;
 
 return new class extends Migration
@@ -23,7 +23,7 @@ return new class extends Migration
                 ->constrained()
                 ->cascadeOnDelete();
 
-            $table->enum('type', LedgerEntriesTypeEnum::values());
+            $table->enum('type', LedgerEntryTypeEnum::values());
             $table->bigInteger('amount')->comment('em centavos');
             $table->bigInteger('balance_after')->comment('em centavos');
             $table->string('description');

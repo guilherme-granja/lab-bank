@@ -3,7 +3,7 @@
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
-use Src\Domain\Accounts\Enums\TransactionType;
+use Src\Domain\Accounts\Enums\TransactionTypeEnum;
 
 return new class extends Migration
 {
@@ -23,7 +23,7 @@ return new class extends Migration
             $table->uuid('destination_account_id')->nullable();
             $table->bigInteger('amount')->comment('em centavos');
             $table->string('currency', 3)->default('BRL');
-            $table->enum('type', TransactionType::values());
+            $table->enum('type', TransactionTypeEnum::values());
             $table->string('status');
             $table->string('description')->nullable();
             $table->string('failure_reason')->nullable();

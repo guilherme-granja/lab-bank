@@ -4,7 +4,7 @@ namespace Src\Domain\Accounts\Enums;
 
 use Src\Shared\Traits\Enum\ToArray;
 
-enum LedgerEntriesTypeEnum: string
+enum LedgerEntryTypeEnum: string
 {
     use ToArray;
 
