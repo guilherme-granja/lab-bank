@@ -15,19 +15,7 @@ return new class extends Migration
 
     public function up(): void
     {
-        Schema::create('domain_events', static function (Blueprint $table) {
-            $table->uuid('id')->primary();
-
-            $table->uuid('aggregate_type');
-            $table->uuid('aggregate_id');
-            $table->integer('aggregate_version');
-            $table->string('event_type');
-            $table->json('payload');
-            $table->json('metadata')->nullable();
-            $table->timestamp('occurred_at');
-
-            $table->unique(['aggregate_id', 'aggregate_version']);
-        });
+        Blueprint::domainEvents();
     }
 
     public function down(): void

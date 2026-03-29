@@ -54,13 +54,22 @@ RUN apt-get update && apt-get upgrade -y \
     php8.4-pcov \
     php8.4-xdebug \
  && curl -sLS https://getcomposer.org/installer \
-    | php -- --install-dir=/usr/bin/ --filename=composer \
+&& npm install -g pnpm \
+&& npm install -g bun \
+&& npx playwright install-deps \
+&& corepack enable \
  && curl -fsSL https://deb.nodesource.com/gpgkey/nodesource-repo.gpg.key \
     | gpg --dearmor -o /etc/apt/keyrings/nodesource.gpg \
  && echo "deb [signed-by=/etc/apt/keyrings/nodesource.gpg] https://deb.nodesource.com/node_$NODE_VERSION.x nodistro main" \
     > /etc/apt/sources.list.d/nodesource.list \
  && apt-get update \
  && apt-get install -y nodejs \
+ && npm install -g npm \
+ && npm install -g pnpm \
+ && npm install -g bun \
+ && npx playwright install-deps \
+ && corepack enable \
+ && corepack prepare yarn@stable --activate \
  && apt-get install -y $MYSQL_CLIENT \
  && apt-get autoremove -y \
  && apt-get clean \
@@ -75,6 +84,7 @@ RUN useradd -ms /bin/bash --no-user-group -g $WWWGROUP -u 1337 sail
 RUN git config --global --add safe.directory /var/www/html
 
 COPY composer.json composer.lock ./
+COPY package.json package-lock.json ./
 
 RUN composer install \
     --no-interaction \
@@ -83,8 +93,6 @@ RUN composer install \
     --no-scripts
 
 COPY . .
-
-RUN npm install --save-dev chokidar
 
 RUN php artisan package:discover
 

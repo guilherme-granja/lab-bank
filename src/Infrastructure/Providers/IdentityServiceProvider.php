@@ -5,7 +5,10 @@ namespace Src\Infrastructure\Providers;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\ServiceProvider;
 use Src\Domain\Identity\Contracts\CustomerRepositoryContract;
+use Src\Domain\Identity\Contracts\KycVerificationRepositoryContract;
+use Src\Domain\Identity\Events\Customer\CustomerActivatedEvent;
 use Src\Infrastructure\Persistence\Identity\EloquentCustomerRepository;
+use Src\Infrastructure\Persistence\Identity\EloquentKycVerificationRepository;
 use Src\Interfaces\Events\Identity\CustomerWasBlocked;
 use Src\Interfaces\Events\Identity\CustomerWasRegistered;
 use Src\Interfaces\Events\Identity\KycWasApproved;
@@ -17,6 +20,7 @@ class IdentityServiceProvider extends ServiceProvider
     public function register(): void
     {
         $this->app->bind(CustomerRepositoryContract::class, EloquentCustomerRepository::class);
+        $this->app->bind(KycVerificationRepositoryContract::class, EloquentKycVerificationRepository::class);
     }
 
     public function boot(): void
@@ -24,6 +28,7 @@ class IdentityServiceProvider extends ServiceProvider
         Event::listen([
             CustomerWasRegistered::class,
             CustomerWasBlocked::class,
+            CustomerActivatedEvent::class,
             KycWasApproved::class,
             KycWasRejected::class,
         ], PersistDomainEvent::class);

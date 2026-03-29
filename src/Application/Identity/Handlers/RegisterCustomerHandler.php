@@ -11,7 +11,7 @@ use Src\Domain\Identity\Exceptions\EmailAlreadyExistsException;
 use Src\Domain\Identity\Models\Customer;
 use Throwable;
 
-readonly class RegisterCustomer
+readonly class RegisterCustomerHandler
 {
     public function __construct(
         protected CustomerRepositoryContract $customerRepository,

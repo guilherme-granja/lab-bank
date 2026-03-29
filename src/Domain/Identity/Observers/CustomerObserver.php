@@ -2,11 +2,13 @@
 
 namespace Src\Domain\Identity\Observers;
 
-use Src\Domain\Identity\Events\Customer\CustomerBlocked;
-use Src\Domain\Identity\Events\Customer\CustomerRegistered;
-use Src\Domain\Identity\Events\Customer\KycApproved;
-use Src\Domain\Identity\Events\Customer\KycRejected;
+use Src\Domain\Identity\Events\Customer\CustomerActivatedEvent;
+use Src\Domain\Identity\Events\Customer\CustomerBlockedEvent;
+use Src\Domain\Identity\Events\Customer\CustomerRegisteredEvent;
+use Src\Domain\Identity\Events\Customer\KycApprovedEvent;
+use Src\Domain\Identity\Events\Customer\KycRejectedEvent;
 use Src\Domain\Identity\Models\Customer;
+use Src\Interfaces\Events\Identity\CustomerWasActivated;
 use Src\Interfaces\Events\Identity\CustomerWasBlocked;
 use Src\Interfaces\Events\Identity\CustomerWasRegistered;
 use Src\Interfaces\Events\Identity\KycWasApproved;
@@ -18,10 +20,11 @@ class CustomerObserver
     {
         foreach ($customer->pullDomainEvents() as $domainEvent) {
             $event = match ($domainEvent::class) {
-                CustomerRegistered::class => new CustomerWasRegistered($customer, $domainEvent),
-                CustomerBlocked::class => new CustomerWasBlocked($customer, $domainEvent),
-                KycApproved::class => new KycWasApproved($customer, $domainEvent),
-                KycRejected::class => new KycWasRejected($customer, $domainEvent),
+                CustomerRegisteredEvent::class => new CustomerWasRegistered($customer, $domainEvent),
+                CustomerBlockedEvent::class => new CustomerWasBlocked($customer, $domainEvent),
+                CustomerActivatedEvent::class => new CustomerWasActivated($customer, $domainEvent),
+                KycApprovedEvent::class => new KycWasApproved($customer, $domainEvent),
+                KycRejectedEvent::class => new KycWasRejected($customer, $domainEvent),
                 default => null,
             };
 

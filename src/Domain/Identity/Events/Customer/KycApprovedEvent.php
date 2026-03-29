@@ -6,7 +6,7 @@ use Illuminate\Support\Carbon;
 use Src\Domain\Identity\Models\Customer;
 use Src\Shared\Events\DomainEvent;
 
-class KycApproved extends DomainEvent
+class KycApprovedEvent extends DomainEvent
 {
     public function __construct(protected Customer $customer)
     {

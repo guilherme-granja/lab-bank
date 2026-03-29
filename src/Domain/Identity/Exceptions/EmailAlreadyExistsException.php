@@ -9,7 +9,7 @@ class EmailAlreadyExistsException extends DomainException
     public function __construct(string $email)
     {
         parent::__construct(
-            message: __('validations.exceptions.email_already_exists', [
+            message: __('domain/identity/validations.exceptions.email_already_exists', [
                 'email' => $email,
             ])
         );

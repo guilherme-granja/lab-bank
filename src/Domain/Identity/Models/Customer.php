@@ -3,22 +3,26 @@
 namespace Src\Domain\Identity\Models;
 
 use Illuminate\Database\Eloquent\Attributes\ObservedBy;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Str;
 use Spatie\ModelStates\Exceptions\CouldNotPerformTransition;
 use Spatie\ModelStates\HasStates;
 use Src\Application\Identity\DataObjects\RegisterCustomerData;
-use Src\Domain\Identity\Events\Customer\CustomerBlocked;
-use Src\Domain\Identity\Events\Customer\CustomerRegistered;
-use Src\Domain\Identity\Events\Customer\KycApproved;
-use Src\Domain\Identity\Events\Customer\KycRejected;
+use Src\Domain\Identity\Events\Customer\CustomerActivatedEvent;
+use Src\Domain\Identity\Events\Customer\CustomerBlockedEvent;
+use Src\Domain\Identity\Events\Customer\CustomerRegisteredEvent;
+use Src\Domain\Identity\Events\Customer\KycApprovedEvent;
+use Src\Domain\Identity\Events\Customer\KycRejectedEvent;
 use Src\Domain\Identity\Observers\CustomerObserver;
 use Src\Domain\Identity\States\Customer\Active;
 use Src\Domain\Identity\States\Customer\Blocked;
 use Src\Domain\Identity\States\Kyc\Approved;
+use Src\Domain\Identity\States\Kyc\Pending;
 use Src\Domain\Identity\States\Kyc\Processing;
 use Src\Domain\Identity\States\Kyc\Rejected;
 use Src\Domain\Identity\States\KycStatus;
@@ -41,6 +45,8 @@ use Src\Shared\Traits\AggregateRoot;
  * @property Carbon $created_at
  * @property Carbon $updated_at
  * @property Carbon $deleted_at
+ *
+ * @property-read Collection $kycVerifications
  */
 #[ObservedBy(CustomerObserver::class)]
 class Customer extends Model
@@ -65,10 +71,15 @@ class Customer extends Model
         ];
     }
 
+    public function kycVerifications(): HasMany|self
+    {
+        return $this->hasMany(KycVerification::class);
+    }
+
     public static function register(RegisterCustomerData $customerData): self
     {
-        $customer = new Customer();
-        $customer->id = Str::uuid()->toString();
+        $customer = new self();
+        $customer->id = $customer->newUniqueId();
         $customer->full_name = $customerData->fullName;
         $customer->cpf = new Cpf($customerData->cpf)->digits();
         $customer->email = $customerData->email;
@@ -77,7 +88,7 @@ class Customer extends Model
         $customer->mother_name = $customerData->motherName;
         $customer->nationality = $customerData->nationality;
 
-        $customer->recordEvent(new CustomerRegistered($customer));
+        $customer->recordEvent(new CustomerRegisteredEvent($customer));
 
         return $customer;
     }
@@ -96,7 +107,7 @@ class Customer extends Model
     public function approveKyc(): void
     {
         $this->kyc_status->transitionTo(Approved::class);
-        $this->recordEvent(new KycApproved($this));
+        $this->recordEvent(new KycApprovedEvent($this));
     }
 
     /**
@@ -105,7 +116,7 @@ class Customer extends Model
     public function rejectKyc(string $reason): void
     {
         $this->kyc_status->transitionTo(Rejected::class);
-        $this->recordEvent(new KycRejected($this, $reason));
+        $this->recordEvent(new KycRejectedEvent($this, $reason));
     }
 
     /**
@@ -114,12 +125,27 @@ class Customer extends Model
     public function block(string $reason): void
     {
         $this->status->transitionTo(Blocked::class);
-        $this->recordEvent(new CustomerBlocked($this, $reason));
+        $this->recordEvent(new CustomerBlockedEvent($this, $reason));
     }
 
     public function canOperate(): bool
     {
         return $this->kyc_status instanceof Approved &&
             $this->status instanceof Active;
+    }
+
+    public function canSubmmitKyc(): bool
+    {
+        return $this->kyc_status instanceof Pending ||
+            $this->kyc_status instanceof Rejected;
+    }
+
+    /**
+     * @throws CouldNotPerformTransition
+     */
+    public function activateAccount(): void
+    {
+        $this->status->transitionTo(Active::class);
+        $this->recordEvent(new CustomerActivatedEvent($this));
     }
 }
