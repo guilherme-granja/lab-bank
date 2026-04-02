@@ -2,6 +2,8 @@
 
 namespace Src\Application\Identity\DataObjects;
 
+use App\Rules\CelularComDdd;
+use App\Rules\Cpf;
 use Spatie\LaravelData\Attributes\MapName;
 use Spatie\LaravelData\Attributes\Validation\Date;
 use Spatie\LaravelData\Attributes\Validation\Max;
@@ -14,11 +16,11 @@ class RegisterCustomerData extends Data
 {
     public function __construct(
         public string $fullName,
-        #[Rule('cpf')]
+        #[Rule([new Cpf])]
         public string $cpf,
         #[Rule('email')]
         public string $email,
-        #[Rule('celular_com_ddd')]
+        #[Rule([new CelularComDdd])]
         public string $phone,
         #[Date]
         public string $birthDate,
