@@ -199,14 +199,14 @@ return [
     'defaults' => [
         'supervisor-1' => [
             'connection' => 'redis',
-            'queue' => ['default'],
+            'queue' => ['accounts', 'cards', 'investments', 'notifications'],
             'balance' => 'auto',
             'autoScalingStrategy' => 'time',
             'maxProcesses' => 1,
             'maxTime' => 0,
             'maxJobs' => 0,
             'memory' => 128,
-            'tries' => 1,
+            'tries' => 3,
             'timeout' => 60,
             'nice' => 0,
         ],
@@ -240,6 +240,7 @@ return [
     */
 
     'watch' => [
+        'src',
         'app',
         'bootstrap',
         'config/**/*.php',
