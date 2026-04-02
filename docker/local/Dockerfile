@@ -31,7 +31,7 @@ RUN apt-get update && apt-get upgrade -y \
  && apt-get install -y \
     gnupg gosu curl ca-certificates zip unzip git supervisor \
     libcap2-bin libpng-dev \
- && curl -sS https://keyserver.ubuntu.com/pks/lookup?op=get\&search=0xb8dc7e53946656efbce4c1dd71daeaab4ad4cab6 \
+ && curl -sS "https://keyserver.ubuntu.com/pks/lookup?op=get&search=0xb8dc7e53946656efbce4c1dd71daeaab4ad4cab6" \
     | gpg --dearmor -o /etc/apt/keyrings/ppa_ondrej_php.gpg \
  && echo "deb [signed-by=/etc/apt/keyrings/ppa_ondrej_php.gpg] https://ppa.launchpadcontent.net/ondrej/php/ubuntu noble main" \
     > /etc/apt/sources.list.d/ppa_ondrej_php.list \
@@ -53,11 +53,7 @@ RUN apt-get update && apt-get upgrade -y \
     php8.4-gd \
     php8.4-pcov \
     php8.4-xdebug \
- && curl -sLS https://getcomposer.org/installer \
-&& npm install -g pnpm \
-&& npm install -g bun \
-&& npx playwright install-deps \
-&& corepack enable \
+ && curl -sLS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer \
  && curl -fsSL https://deb.nodesource.com/gpgkey/nodesource-repo.gpg.key \
     | gpg --dearmor -o /etc/apt/keyrings/nodesource.gpg \
  && echo "deb [signed-by=/etc/apt/keyrings/nodesource.gpg] https://deb.nodesource.com/node_$NODE_VERSION.x nodistro main" \
