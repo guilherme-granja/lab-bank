@@ -7,3 +7,9 @@ CREATE DATABASE IF NOT EXISTS db_accounts CHARACTER SET utf8mb4 COLLATE utf8mb4_
 CREATE DATABASE IF NOT EXISTS db_cards CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 CREATE DATABASE IF NOT EXISTS db_investments CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 CREATE DATABASE IF NOT EXISTS db_app CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+CREATE DATABASE IF NOT EXISTS db_identity_testing CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+CREATE DATABASE IF NOT EXISTS db_accounts_testing CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+CREATE DATABASE IF NOT EXISTS db_cards_testing CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+CREATE DATABASE IF NOT EXISTS db_investments_testing CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+CREATE DATABASE IF NOT EXISTS db_app_testing CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;

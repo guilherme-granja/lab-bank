@@ -8,8 +8,6 @@ use Src\Domain\Identity\Contracts\CustomerRepositoryContract;
 use Src\Domain\Identity\Contracts\KycVerificationRepositoryContract;
 use Src\Domain\Identity\Exceptions\CustomerCantSubmitKyc;
 use Src\Domain\Identity\Exceptions\CustomerNotFoundException;
-use Src\Domain\Identity\Exceptions\DocumentNotUploaded;
-use Src\Domain\Identity\Models\Customer;
 use Src\Domain\Identity\Models\KycVerification;
 use Src\Infrastructure\Storage\KycDocumentStorage;
 use Throwable;
@@ -34,10 +32,9 @@ readonly class SubmitKycDocumentsHandler
             exception: CustomerNotFoundException::class,
         );
 
-        throw_if(
-            condition: ! $customer->canSubmmitKyc(),
-            exception: CustomerCantSubmitKyc::class,
-        );
+        if (! $customer->canSubmmitKyc()) {
+            throw new CustomerCantSubmitKyc($customer->kyc_status);
+        }
 
         $paths = $this->kycDocumentStorage->uploadKycDocuments($submitKycDocumentsData, $customer->id);
 

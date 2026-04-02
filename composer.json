@@ -10,18 +10,19 @@
     "license": "MIT",
     "require": {
         "php": "^8.4",
-        "laravel/framework": "^12.0",
+        "laravel/framework": "^13.0",
+        "laravel/horizon": "^5.45",
         "laravel/octane": "^2.15",
         "laravel/sanctum": "^4.0",
         "laravel/telescope": "^5.18",
-        "laravel/tinker": "^2.10.1",
-        "laravellegends/pt-br-validator": "^12.2",
+        "laravel/tinker": "^3.0",
         "league/flysystem-aws-s3-v3": "^3.0",
         "spatie/laravel-data": "^4.20",
         "spatie/laravel-model-states": "^2.13"
     },
     "require-dev": {
         "fakerphp/faker": "^1.23",
+        "laravel/boost": "^2.4",
         "laravel/pail": "^1.2.2",
         "laravel/pint": "^1.24",
         "laravel/sail": "^1.41",
