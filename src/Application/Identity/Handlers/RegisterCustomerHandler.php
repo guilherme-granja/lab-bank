@@ -22,15 +22,13 @@ readonly class RegisterCustomerHandler
      */
     public function __invoke(RegisterCustomerData $customerData): CustomerData
     {
-        throw_if(
-            condition: $this->customerRepository->existsByCpf($customerData->cpf),
-            exception: CpfAlreadyExistsException::class
-        );
+        if ($this->customerRepository->existsByCpf($customerData->cpf)) {
+            throw new CpfAlreadyExistsException($customerData->cpf);
+        }
 
-        throw_if(
-            condition: $this->customerRepository->existsByEmail($customerData->email),
-            exception: EmailAlreadyExistsException::class
-        );
+        if ($this->customerRepository->existsByEmail($customerData->email)) {
+            throw new EmailAlreadyExistsException($customerData->email);
+        }
 
         $customer = DB::connection('identity')
             ->transaction(function () use ($customerData) {

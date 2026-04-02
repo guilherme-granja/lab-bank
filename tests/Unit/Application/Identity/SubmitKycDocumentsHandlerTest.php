@@ -32,9 +32,9 @@ beforeEach(function () {
         customerId: 'some-customer-id',
         documentType: DocumentTypeEnum::Cnh,
         documentNumber: '12345678901',
-        documentFront: UploadedFile::fake()->image('front.jpg'),
-        documentBack: UploadedFile::fake()->image('back.jpg'),
-        selfie: UploadedFile::fake()->image('selfie.jpg'),
+        documentFront: UploadedFile::fake()->create('front.jpg', 100, 'image/jpeg'),
+        documentBack: UploadedFile::fake()->create('back.jpg', 100, 'image/jpeg'),
+        selfie: UploadedFile::fake()->create('selfie.jpg', 100, 'image/jpeg'),
     );
 });
 

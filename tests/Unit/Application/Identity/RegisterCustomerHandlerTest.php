@@ -34,7 +34,9 @@ describe('RegisterCustomerHandler', function () {
     it('saves the customer via the repository on success', function () {
         $this->repository->shouldReceive('existsByCpf')->once()->andReturn(false);
         $this->repository->shouldReceive('existsByEmail')->once()->andReturn(false);
-        $this->repository->shouldReceive('save')->once()->with(Mockery::type(Customer::class));
+        $this->repository->shouldReceive('save')->once()
+            ->with(Mockery::type(Customer::class))
+            ->andReturnUsing(fn (Customer $customer) => $customer->save());
 
         ($this->handler)($this->data);
     });
@@ -42,7 +44,8 @@ describe('RegisterCustomerHandler', function () {
     it('returns a CustomerData DTO with the correct fields', function () {
         $this->repository->shouldReceive('existsByCpf')->once()->andReturn(false);
         $this->repository->shouldReceive('existsByEmail')->once()->andReturn(false);
-        $this->repository->shouldReceive('save')->once();
+        $this->repository->shouldReceive('save')->once()
+            ->andReturnUsing(fn (Customer $customer) => $customer->save());
 
         $result = ($this->handler)($this->data);
 
@@ -79,8 +82,7 @@ describe('RegisterCustomerHandler', function () {
         $this->repository->shouldReceive('existsByCpf')->once()->andReturn(true);
         $this->repository->shouldNotReceive('save');
 
-        expect(fn () => ($this->handler)($this->data))
-            ->toThrow(CpfAlreadyExistsException::class);
+        expect(fn () => ($this->handler)($this->data))->toThrow(CpfAlreadyExistsException::class);
     });
 
     it('does not save when the email already exists', function () {
@@ -88,7 +90,6 @@ describe('RegisterCustomerHandler', function () {
         $this->repository->shouldReceive('existsByEmail')->once()->andReturn(true);
         $this->repository->shouldNotReceive('save');
 
-        expect(fn () => ($this->handler)($this->data))
-            ->toThrow(EmailAlreadyExistsException::class);
+        expect(fn () => ($this->handler)($this->data))->toThrow(EmailAlreadyExistsException::class);
     });
 });

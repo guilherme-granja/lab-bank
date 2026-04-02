@@ -16,9 +16,9 @@ function kycDocumentsPayload(array $overrides = []): array
     return array_merge([
         'document_type' => 'cnh',
         'document_number' => '12345678901',
-        'document_front' => UploadedFile::fake()->image('front.jpg'),
-        'document_back' => UploadedFile::fake()->image('back.jpg'),
-        'selfie' => UploadedFile::fake()->image('selfie.jpg'),
+        'document_front' => UploadedFile::fake()->create('front.jpg', 100, 'image/jpeg'),
+        'document_back' => UploadedFile::fake()->create('back.jpg', 100, 'image/jpeg'),
+        'selfie' => UploadedFile::fake()->create('selfie.jpg', 100, 'image/jpeg'),
     ], $overrides);
 }
 
