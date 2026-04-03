@@ -4,40 +4,62 @@ namespace App\Rules;
 
 use Closure;
 use Illuminate\Contracts\Validation\ValidationRule;
-use Illuminate\Translation\PotentiallyTranslatedString;
 
 class Cpf implements ValidationRule
 {
-    /**
-     * @param  Closure(string, ?string=): PotentiallyTranslatedString  $fail
-     */
     public function validate(string $attribute, mixed $value, Closure $fail): void
     {
-        if (! $this->passes($value)) {
+        if (! $this->isValidCpf($value)) {
             $fail('O campo :attribute não é um CPF válido.');
         }
     }
 
-    private function passes(string $value): bool
+    private function isValidCpf(string $value): bool
     {
-        $c = preg_replace('/\D/', '', $value);
+        $cpf = $this->onlyNumbers($value);
 
-        if (strlen($c) !== 11 || preg_match("/^{$c[0]}{11}$/", $c)) {
+        if (! $this->hasValidLength($cpf) || $this->isRepeatedSequence($cpf)) {
             return false;
         }
 
-        for ($s = 10, $n = 0, $i = 0; $s >= 2; $s--) {
-            $n += $c[$i++] * $s;
+        return $this->validateDigits($cpf);
+    }
+
+    private function onlyNumbers(string $value): string
+    {
+        return preg_replace('/\D/', '', $value);
+    }
+
+    private function hasValidLength(string $cpf): bool
+    {
+        return strlen($cpf) === 11;
+    }
+
+    private function isRepeatedSequence(string $cpf): bool
+    {
+        return preg_match('/^(\d)\1{10}$/', $cpf) === 1;
+    }
+
+    private function validateDigits(string $cpf): bool
+    {
+        $sum = 0;
+        for ($i = 0, $weight = 10; $weight >= 2; $i++, $weight--) {
+            $sum += (int) $cpf[$i] * $weight;
         }
 
-        if ($c[9] !== ((($n %= 11) < 2) ? 0 : 11 - $n)) {
+        $firstDigit = ($sum % 11) < 2 ? 0 : 11 - ($sum % 11);
+
+        if ((int) $cpf[9] !== $firstDigit) {
             return false;
         }
 
-        for ($s = 11, $n = 0, $i = 0; $s >= 2; $s--) {
-            $n += $c[$i++] * $s;
+        $sum = 0;
+        for ($i = 0, $weight = 11; $weight >= 2; $i++, $weight--) {
+            $sum += (int) $cpf[$i] * $weight;
         }
 
-        return $c[10] === ((($n %= 11) < 2) ? 0 : 11 - $n);
+        $secondDigit = ($sum % 11) < 2 ? 0 : 11 - ($sum % 11);
+
+        return (int) $cpf[10] === $secondDigit;
     }
 }
