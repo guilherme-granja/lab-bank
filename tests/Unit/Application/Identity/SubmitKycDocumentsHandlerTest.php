@@ -76,12 +76,6 @@ describe('SubmitKycDocumentsHandler', function () {
             ->toThrow(CustomerNotFoundException::class);
     });
 
-    /**
-     * NOTE: This test documents a known bug in SubmitKycDocumentsHandler.
-     * When canSubmmitKyc() is false, throw_if() instantiates CustomerCantSubmitKyc
-     * with no arguments, but its constructor requires a KycStatus parameter, which
-     * causes an ArgumentCountError instead of the intended exception.
-     */
     it('throws an exception when the customer cannot submit kyc', function () {
         $customer = mock(Customer::class)->makePartial();
         $customer->shouldReceive('canSubmmitKyc')->once()->andReturn(false);

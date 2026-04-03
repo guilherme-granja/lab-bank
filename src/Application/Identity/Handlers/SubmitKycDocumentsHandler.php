@@ -27,10 +27,9 @@ readonly class SubmitKycDocumentsHandler
     {
         $customer = $this->customerRepository->findById($submitKycDocumentsData->customerId);
 
-        throw_if(
-            condition: is_null($customer),
-            exception: CustomerNotFoundException::class,
-        );
+        if (is_null($customer)) {
+            throw new CustomerNotFoundException();
+        }
 
         if (! $customer->canSubmmitKyc()) {
             throw new CustomerCantSubmitKyc($customer->kyc_status);

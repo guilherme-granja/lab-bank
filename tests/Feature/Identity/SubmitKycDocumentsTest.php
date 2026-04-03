@@ -49,7 +49,9 @@ describe('POST /api/v1/identity/customer/{customerId}/kyc/documents', function (
             kycDocumentsPayload(),
         )->assertNoContent();
 
-        Storage::assertDirectoryNotEmpty("kyc/{$customer->id}");
+        $files = Storage::files("kyc/{$customer->id}");
+
+        expect($files)->not->toBeEmpty();
     });
 
     it('persists a kyc_verification record to the database', function () {
