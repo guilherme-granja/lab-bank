@@ -11,7 +11,7 @@ class CustomerWasBlocked
     use Dispatchable;
 
     public function __construct(
-        public readonly Customer             $customer,
+        public readonly Customer $customer,
         public readonly CustomerBlockedEvent $domainEvent,
     ) {}
 }
