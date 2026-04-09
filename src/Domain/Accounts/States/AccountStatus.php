@@ -24,8 +24,7 @@ abstract class AccountStatus extends State
                 Closed::class,
                 Blocked::class,
             ])
-            ->default(Pending::class)
-            ->allowTransition(Pending::class, Active::class)
+            ->default(Active::class)
             ->allowTransition(Active::class, Blocked::class)
             ->allowTransition(Active::class, Closed::class)
             ->allowTransition(Blocked::class, Active::class);

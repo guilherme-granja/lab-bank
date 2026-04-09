@@ -11,6 +11,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Carbon;
 use Spatie\ModelStates\HasStates;
 use Src\Domain\Accounts\Enums\AccountTypeEnum;
+use Src\Domain\Accounts\Events\Account\AccountOpenedEvent;
 use Src\Domain\Accounts\Observers\AccountObserver;
 use Src\Domain\Accounts\States\AccountStatus;
 use Src\Shared\Traits\AggregateRoot;
@@ -65,5 +66,19 @@ class Account extends Model
     public function balance(): HasOne
     {
         return $this->hasOne(AccountBalance::class);
+    }
+
+    public static function register(string $customerId, AccountTypeEnum $accountTypeEnum, string $accountNumber): self
+    {
+        $account = new self();
+        $account->id = $account->newUniqueId();
+        $account->customer_id = $customerId;
+        $account->account_number = $accountNumber;
+        $account->account_type = $accountTypeEnum;
+        $account->activated_at = now();
+
+        $account->recordEvent(new AccountOpenedEvent($account));
+
+        return $account;
     }
 }

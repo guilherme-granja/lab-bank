@@ -39,4 +39,15 @@ class AccountBalance extends Model
     {
         return $this->belongsTo(Account::class);
     }
+
+    public static function register(Account $account): self
+    {
+        $balance = new self();
+        $balance->account_id = $account->id;
+        $balance->available_balance = 0;
+        $balance->blocked_amount = 0;
+        $balance->last_updated_at = now();
+
+        return $balance;
+    }
 }

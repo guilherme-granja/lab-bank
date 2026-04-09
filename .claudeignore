@@ -1,0 +1,8 @@
+node_modules/
+vendor/
+dist/
+*.lock
+*.min.js
+storage/
+bootstrap/cache/
+.git/

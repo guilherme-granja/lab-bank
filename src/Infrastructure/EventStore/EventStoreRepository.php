@@ -3,6 +3,8 @@
 namespace Src\Infrastructure\EventStore;
 
 use Illuminate\Support\Facades\DB;
+use Src\Domain\Accounts\Models\Account;
+use Src\Domain\Identity\Models\Customer;
 use Src\Shared\Events\DomainEvent;
 use Throwable;
 
@@ -10,11 +12,15 @@ class EventStoreRepository
 {
     private array $aggregateVersions = [];
 
+    private string $connection;
+
     public function storeAll(array $events): void
     {
+        $this->resolveConnection($events[0]->aggregateType);
+
         $this->setAggregateVersions($events);
 
-        DB::connection('identity')
+        DB::connection($this->connection)
             ->table('domain_events')
             ->insert(
                 collect($events)->map(function (DomainEvent $domainEvent) {
@@ -31,7 +37,7 @@ class EventStoreRepository
             ->values()
             ->toArray();
 
-        $this->aggregateVersions = DB::connection('identity')
+        $this->aggregateVersions = DB::connection($this->connection)
             ->table('domain_events')
             ->whereIn('aggregate_id', $aggregateIds)
             ->groupBy('aggregate_id')
@@ -55,5 +61,14 @@ class EventStoreRepository
             'metadata' => json_encode($domainEvent->metadata, JSON_THROW_ON_ERROR),
             'occurred_at' => $domainEvent->occurredAt,
         ];
+    }
+
+    private function resolveConnection(string $aggregateType): void
+    {
+        $this->connection = match ($aggregateType) {
+            class_basename(Customer::class) => 'identity',
+            class_basename(Account::class) => 'accounts',
+            default => throw new \InvalidArgumentException("Unknown aggregate type: {$aggregateType}"),
+        };
     }
 }
