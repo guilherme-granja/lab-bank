@@ -47,6 +47,7 @@ use Src\Shared\Traits\AggregateRoot;
  * @property Carbon $deleted_at
  *
  * @property-read Collection $kycVerifications
+ * @property-read Collection $customerAddresses
  */
 #[ObservedBy(CustomerObserver::class)]
 class Customer extends Model
@@ -74,6 +75,11 @@ class Customer extends Model
     public function kycVerifications(): HasMany|self
     {
         return $this->hasMany(KycVerification::class);
+    }
+
+    public function customerAddresses(): HasMany|self
+    {
+        return $this->hasMany(CustomerAddress::class);
     }
 
     public static function register(RegisterCustomerData $customerData): self
