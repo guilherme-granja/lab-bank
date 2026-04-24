@@ -8,8 +8,8 @@ use Src\Application\Identity\Handlers\SubmitKycDocumentsHandler;
 use Src\Domain\Identity\Contracts\CustomerRepositoryContract;
 use Src\Domain\Identity\Contracts\KycVerificationRepositoryContract;
 use Src\Domain\Identity\Enums\Kyc\DocumentTypeEnum;
+use Src\Domain\Identity\Exceptions\CustomerCantSubmitKyc;
 use Src\Domain\Identity\Exceptions\CustomerNotFoundException;
-use Src\Domain\Identity\Models\Customer;
 use Src\Domain\Identity\Models\KycVerification;
 use Src\Infrastructure\Storage\KycDocumentStorage;
 
@@ -40,7 +40,7 @@ beforeEach(function () {
 
 describe('SubmitKycDocumentsHandler', function () {
     it('uploads documents and persists a kyc verification on success', function () {
-        $customer = CustomerFactory::new()->make();
+        $customer = CustomerFactory::new()->create();
 
         $this->customerRepository->shouldReceive('findById')->once()->andReturn($customer);
         $this->kycDocumentStorage->shouldReceive('uploadKycDocuments')->once()->andReturn([
@@ -76,14 +76,24 @@ describe('SubmitKycDocumentsHandler', function () {
             ->toThrow(CustomerNotFoundException::class);
     });
 
-    it('throws an exception when the customer cannot submit kyc', function () {
-        $customer = mock(Customer::class)->makePartial();
-        $customer->shouldReceive('canSubmmitKyc')->once()->andReturn(false);
-        $customer->id = 'some-id';
+    it('throws CustomerCantSubmitKyc when the customer kyc is already approved', function () {
+        $customer = CustomerFactory::new()->withKycApproved()->create();
 
         $this->customerRepository->shouldReceive('findById')->once()->andReturn($customer);
+        $this->kycDocumentStorage->shouldNotReceive('uploadKycDocuments');
+        $this->kycVerificationRepository->shouldNotReceive('save');
 
         expect(fn () => ($this->handler)($this->data))
-            ->toThrow(Throwable::class);
+            ->toThrow(CustomerCantSubmitKyc::class);
+    });
+
+    it('throws CustomerCantSubmitKyc when the customer kyc is processing', function () {
+        $customer = CustomerFactory::new()->withKycProcessing()->create();
+
+        $this->customerRepository->shouldReceive('findById')->once()->andReturn($customer);
+        $this->kycDocumentStorage->shouldNotReceive('uploadKycDocuments');
+
+        expect(fn () => ($this->handler)($this->data))
+            ->toThrow(CustomerCantSubmitKyc::class);
     });
 });

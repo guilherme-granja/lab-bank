@@ -5,18 +5,25 @@ use Src\Application\Identity\DataObjects\AddressData;
 use Src\Application\Identity\DataObjects\CustomerData;
 use Src\Application\Identity\DataObjects\RegisterCustomerData;
 use Src\Application\Identity\Handlers\RegisterCustomerHandler;
+use Src\Domain\Identity\Contracts\CustomerAddressRepositoryContract;
 use Src\Domain\Identity\Contracts\CustomerRepositoryContract;
 use Src\Domain\Identity\Exceptions\CpfAlreadyExistsException;
 use Src\Domain\Identity\Exceptions\EmailAlreadyExistsException;
 use Src\Domain\Identity\Models\Customer;
+use Src\Domain\Identity\Models\CustomerAddress;
 
 use function Pest\Laravel\mock;
 
 beforeEach(function () {
     Event::fake();
 
-    $this->repository = mock(CustomerRepositoryContract::class);
-    $this->handler = new RegisterCustomerHandler($this->repository);
+    $this->customerRepository = mock(CustomerRepositoryContract::class);
+    $this->customerAddressRepository = mock(CustomerAddressRepositoryContract::class);
+
+    $this->handler = new RegisterCustomerHandler(
+        $this->customerRepository,
+        $this->customerAddressRepository,
+    );
 
     $this->data = new RegisterCustomerData(
         fullName: 'João da Silva',
@@ -31,21 +38,24 @@ beforeEach(function () {
 });
 
 describe('RegisterCustomerHandler', function () {
-    it('saves the customer via the repository on success', function () {
-        $this->repository->shouldReceive('existsByCpf')->once()->andReturn(false);
-        $this->repository->shouldReceive('existsByEmail')->once()->andReturn(false);
-        $this->repository->shouldReceive('save')->once()
+    it('saves the customer and address via their repositories', function () {
+        $this->customerRepository->shouldReceive('existsByCpf')->once()->andReturn(false);
+        $this->customerRepository->shouldReceive('existsByEmail')->once()->andReturn(false);
+        $this->customerRepository->shouldReceive('save')->once()
             ->with(Mockery::type(Customer::class))
             ->andReturnUsing(fn (Customer $customer) => $customer->save());
+        $this->customerAddressRepository->shouldReceive('save')->once()
+            ->with(Mockery::type(CustomerAddress::class));
 
         ($this->handler)($this->data);
     });
 
     it('returns a CustomerData DTO with the correct fields', function () {
-        $this->repository->shouldReceive('existsByCpf')->once()->andReturn(false);
-        $this->repository->shouldReceive('existsByEmail')->once()->andReturn(false);
-        $this->repository->shouldReceive('save')->once()
+        $this->customerRepository->shouldReceive('existsByCpf')->once()->andReturn(false);
+        $this->customerRepository->shouldReceive('existsByEmail')->once()->andReturn(false);
+        $this->customerRepository->shouldReceive('save')->once()
             ->andReturnUsing(fn (Customer $customer) => $customer->save());
+        $this->customerAddressRepository->shouldReceive('save')->once();
 
         $result = ($this->handler)($this->data);
 
@@ -56,39 +66,41 @@ describe('RegisterCustomerHandler', function () {
     });
 
     it('throws CpfAlreadyExistsException when the cpf already exists', function () {
-        $this->repository->shouldReceive('existsByCpf')->once()->andReturn(true);
+        $this->customerRepository->shouldReceive('existsByCpf')->once()->andReturn(true);
 
         expect(fn () => ($this->handler)($this->data))
             ->toThrow(CpfAlreadyExistsException::class);
     });
 
     it('skips the email check when the cpf already exists', function () {
-        $this->repository->shouldReceive('existsByCpf')->once()->andReturn(true);
-        $this->repository->shouldNotReceive('existsByEmail');
+        $this->customerRepository->shouldReceive('existsByCpf')->once()->andReturn(true);
+        $this->customerRepository->shouldNotReceive('existsByEmail');
 
         expect(fn () => ($this->handler)($this->data))
             ->toThrow(CpfAlreadyExistsException::class);
     });
 
     it('throws EmailAlreadyExistsException when the email already exists', function () {
-        $this->repository->shouldReceive('existsByCpf')->once()->andReturn(false);
-        $this->repository->shouldReceive('existsByEmail')->once()->andReturn(true);
+        $this->customerRepository->shouldReceive('existsByCpf')->once()->andReturn(false);
+        $this->customerRepository->shouldReceive('existsByEmail')->once()->andReturn(true);
 
         expect(fn () => ($this->handler)($this->data))
             ->toThrow(EmailAlreadyExistsException::class);
     });
 
     it('does not save when the cpf already exists', function () {
-        $this->repository->shouldReceive('existsByCpf')->once()->andReturn(true);
-        $this->repository->shouldNotReceive('save');
+        $this->customerRepository->shouldReceive('existsByCpf')->once()->andReturn(true);
+        $this->customerRepository->shouldNotReceive('save');
+        $this->customerAddressRepository->shouldNotReceive('save');
 
         expect(fn () => ($this->handler)($this->data))->toThrow(CpfAlreadyExistsException::class);
     });
 
     it('does not save when the email already exists', function () {
-        $this->repository->shouldReceive('existsByCpf')->once()->andReturn(false);
-        $this->repository->shouldReceive('existsByEmail')->once()->andReturn(true);
-        $this->repository->shouldNotReceive('save');
+        $this->customerRepository->shouldReceive('existsByCpf')->once()->andReturn(false);
+        $this->customerRepository->shouldReceive('existsByEmail')->once()->andReturn(true);
+        $this->customerRepository->shouldNotReceive('save');
+        $this->customerAddressRepository->shouldNotReceive('save');
 
         expect(fn () => ($this->handler)($this->data))->toThrow(EmailAlreadyExistsException::class);
     });

@@ -11,6 +11,7 @@ use Src\Domain\Identity\Exceptions\CpfAlreadyExistsException;
 use Src\Domain\Identity\Exceptions\EmailAlreadyExistsException;
 use Src\Domain\Identity\Models\Customer;
 use Src\Domain\Identity\Models\CustomerAddress;
+use Src\Domain\Identity\ValueObjects\Cpf;
 use Throwable;
 
 readonly class RegisterCustomerHandler
@@ -25,7 +26,9 @@ readonly class RegisterCustomerHandler
      */
     public function __invoke(RegisterCustomerData $customerData): CustomerData
     {
-        if ($this->customerRepository->existsByCpf($customerData->cpf)) {
+        $cpfDigits = new Cpf($customerData->cpf)->digits();
+
+        if ($this->customerRepository->existsByCpf($cpfDigits)) {
             throw new CpfAlreadyExistsException($customerData->cpf);
         }
 

@@ -3,6 +3,7 @@
          xsi:noNamespaceSchemaLocation="vendor/phpunit/phpunit/phpunit.xsd"
          bootstrap="vendor/autoload.php"
          colors="true"
+         stopOnFailure="false"
 >
     <testsuites>
         <testsuite name="Unit">
@@ -19,6 +20,10 @@
         </include>
     </source>
     <php>
-        <env name="APP_ENV" value="testing"/>
+        <!--
+            Setting APP_ENV=testing causes Laravel to automatically load .env.testing.
+            All database and application config must be defined there — not overridden here.
+        -->
+        <env name="APP_ENV" value="testing" force="true"/>
     </php>
 </phpunit>
