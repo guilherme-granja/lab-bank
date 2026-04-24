@@ -6,6 +6,9 @@ on:
   pull_request:
     branches: [main, develop]
 
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
 jobs:
   unit:
     name: Unit Tests
@@ -19,7 +22,7 @@ jobs:
         with:
           php-version: '8.4'
           extensions: pdo, pdo_mysql, redis, mbstring, xml, ctype, json, bcmath
-          coverage: none
+          coverage: xdebug
 
       - name: Cache Composer dependencies
         uses: actions/cache@v4
@@ -31,11 +34,14 @@ jobs:
       - name: Install dependencies
         run: composer install --no-interaction --prefer-dist --optimize-autoloader
 
-      - name: Copy .env.testing
-        run: cp .env.testing .env
+      - name: Prepare .env for CI
+        run: |
+          cp .env.testing .env
+          sed -i 's/^DB_USERNAME=.*/DB_USERNAME=root/' .env
+          sed -i 's/^DB_PASSWORD=.*/DB_PASSWORD=/' .env
 
       - name: Run unit tests
-        run: php artisan test --testsuite=Unit --compact
+        run: php -dxdebug.mode=coverage ./vendor/bin/pest -c ./phpunit.xml --testsuite=Unit --coverage --min=85
 
   integration:
     name: Integration Tests
@@ -73,7 +79,7 @@ jobs:
         with:
           php-version: '8.4'
           extensions: pdo, pdo_mysql, redis, mbstring, xml, ctype, json, bcmath
-          coverage: none
+          coverage: xdebug
 
       - name: Cache Composer dependencies
         uses: actions/cache@v4
@@ -85,13 +91,11 @@ jobs:
       - name: Install dependencies
         run: composer install --no-interaction --prefer-dist --optimize-autoloader
 
-      - name: Prepare .env.testing for CI
+      - name: Prepare .env for CI
         run: |
           cp .env.testing .env
-          sed -i 's/^DB_HOST=.*/DB_HOST=127.0.0.1/' .env
           sed -i 's/^DB_USERNAME=.*/DB_USERNAME=root/' .env
           sed -i 's/^DB_PASSWORD=.*/DB_PASSWORD=/' .env
-          sed -i 's/^REDIS_HOST=.*/REDIS_HOST=127.0.0.1/' .env
 
       - name: Create databases
         run: |
@@ -109,4 +113,4 @@ jobs:
           php artisan migrate --database=accounts --path=database/migrations/accounts --force
 
       - name: Run integration tests
-        run: php artisan test --testsuite=Feature --compact
+        run: php -dxdebug.mode=coverage ./vendor/bin/pest -c ./phpunit.xml --testsuite=Feature --coverage --min=85
