@@ -7,6 +7,7 @@ use Src\Shared\Events\DomainEvent;
 trait AggregateRoot
 {
     private array $domainEvents = [];
+
     private int $aggregateVersion = 0;
 
     protected function recordEvent(DomainEvent $domainEvent): void

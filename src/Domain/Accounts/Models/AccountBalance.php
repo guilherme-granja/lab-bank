@@ -13,9 +13,8 @@ use Illuminate\Support\Carbon;
  * @property int $available_balance
  * @property int $blocked_amount
  * @property Carbon $last_updated_at
- *
  * @property Account $account
-*/
+ */
 class AccountBalance extends Model
 {
     use HasUuids;
@@ -42,7 +41,7 @@ class AccountBalance extends Model
 
     public static function register(Account $account): self
     {
-        $balance = new self();
+        $balance = new self;
         $balance->account_id = $account->id;
         $balance->available_balance = 0;
         $balance->blocked_amount = 0;

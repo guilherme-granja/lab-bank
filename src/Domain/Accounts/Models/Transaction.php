@@ -24,11 +24,11 @@ use Src\Domain\Accounts\States\TransactionStatus;
  * @property Carbon|null $completed_at
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
-*/
+ */
 class Transaction extends Model
 {
-    use HasUuids;
     use HasStates;
+    use HasUuids;
 
     protected $connection = 'accounts';
 

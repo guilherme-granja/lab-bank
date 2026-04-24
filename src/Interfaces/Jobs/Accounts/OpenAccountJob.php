@@ -18,7 +18,7 @@ use Throwable;
 #[Queue('accounts')]
 #[Tries(3)]
 #[Backoff(60)]
-class OpenAccountJob implements ShouldQueue, ShouldBeEncrypted
+class OpenAccountJob implements ShouldBeEncrypted, ShouldQueue
 {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 

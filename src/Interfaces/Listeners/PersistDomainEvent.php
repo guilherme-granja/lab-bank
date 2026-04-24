@@ -3,7 +3,6 @@
 namespace Src\Interfaces\Listeners;
 
 use Src\Infrastructure\EventStore\EventStoreRepository;
-use Throwable;
 
 readonly class PersistDomainEvent
 {

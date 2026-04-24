@@ -30,17 +30,16 @@ use Src\Shared\Traits\AggregateRoot;
  * @property Carbon|null $deleted_at
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
- *
  * @property-read LedgerEntry[] $ledgerEntries
  * @property-read AccountBalance $balance
-*/
+ */
 #[ObservedBy(AccountObserver::class)]
 class Account extends Model
 {
-    use SoftDeletes;
+    use AggregateRoot;
     use HasStates;
     use HasUuids;
-    use AggregateRoot;
+    use SoftDeletes;
 
     protected $connection = 'accounts';
 
@@ -70,7 +69,7 @@ class Account extends Model
 
     public static function register(string $customerId, AccountTypeEnum $accountTypeEnum, string $accountNumber): self
     {
-        $account = new self();
+        $account = new self;
         $account->id = $account->newUniqueId();
         $account->customer_id = $customerId;
         $account->account_number = $accountNumber;

@@ -27,13 +27,12 @@ use Src\Domain\Identity\States\KycVerification as KycVerificationState;
  * @property Carbon|null $reviewed_at
  * @property Carbon $created_at
  * @property Carbon $updated_at
- *
  * @property-read Customer $customer
  */
 class KycVerification extends Model
 {
-    use HasUuids;
     use HasStates;
+    use HasUuids;
 
     protected $connection = 'identity';
 
@@ -56,12 +55,12 @@ class KycVerification extends Model
     }
 
     public static function register(
-        array            $paths,
-        string           $customerId,
+        array $paths,
+        string $customerId,
         DocumentTypeEnum $documentType,
-        string           $documentNumber,
+        string $documentNumber,
     ): self {
-        $kycVerification = new self();
+        $kycVerification = new self;
         $kycVerification->customer_id = $customerId;
         $kycVerification->document_type = $documentType;
         $kycVerification->document_number = $documentNumber;

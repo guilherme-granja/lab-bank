@@ -20,6 +20,7 @@ class ApproveKycController
     public function __invoke(ApproveKycData $request): JsonResponse
     {
         ($this->approveKycHandler)($request);
+
         return response()->json(status: Response::HTTP_NO_CONTENT);
     }
 }

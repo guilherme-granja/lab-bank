@@ -22,7 +22,6 @@ use Src\Application\Identity\DataObjects\AddressData;
  * @property bool $is_primary
  * @property Carbon $created_at
  * @property Carbon $updated_at
- *
  * @property-read Customer $customer
  */
 class CustomerAddress extends Model
@@ -44,7 +43,7 @@ class CustomerAddress extends Model
 
     public static function register(AddressData $addressData, Customer $customer): self
     {
-        $customerAddress = new self();
+        $customerAddress = new self;
         $customerAddress->id = $customerAddress->newUniqueId();
         $customerAddress->customer_id = $customer->id;
         $customerAddress->zip_code = $addressData->zipCode;

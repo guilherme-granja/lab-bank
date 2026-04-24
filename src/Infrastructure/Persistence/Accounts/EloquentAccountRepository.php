@@ -7,7 +7,6 @@ use Src\Domain\Accounts\Models\Account;
 
 class EloquentAccountRepository implements AccountRepositoryContract
 {
-
     public function save(Account $account): void
     {
         $account->save();

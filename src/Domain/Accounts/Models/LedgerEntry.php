@@ -6,8 +6,8 @@ use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Support\Carbon;
-use Src\Domain\Accounts\Enums\LedgerEntryTypeEnum;
 use Src\Domain\Accounts\Enums\LedgerEntryCategory;
+use Src\Domain\Accounts\Enums\LedgerEntryTypeEnum;
 
 /**
  * @property string $id
@@ -21,9 +21,8 @@ use Src\Domain\Accounts\Enums\LedgerEntryCategory;
  * @property string $correlation_id
  * @property string|null $metadata
  * @property Carbon $occurred_at
- *
  * @property-read Account $account
-*/
+ */
 class LedgerEntry extends Model
 {
     use HasUuids;

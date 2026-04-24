@@ -9,7 +9,6 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Carbon;
-use Illuminate\Support\Str;
 use Spatie\ModelStates\Exceptions\CouldNotPerformTransition;
 use Spatie\ModelStates\HasStates;
 use Src\Application\Identity\DataObjects\RegisterCustomerData;
@@ -45,17 +44,16 @@ use Src\Shared\Traits\AggregateRoot;
  * @property Carbon $created_at
  * @property Carbon $updated_at
  * @property Carbon $deleted_at
- *
  * @property-read Collection $kycVerifications
  * @property-read Collection $customerAddresses
  */
 #[ObservedBy(CustomerObserver::class)]
 class Customer extends Model
 {
-    use SoftDeletes;
-    use HasStates;
     use AggregateRoot;
+    use HasStates;
     use HasUuids;
+    use SoftDeletes;
 
     protected $connection = 'identity';
 
@@ -84,7 +82,7 @@ class Customer extends Model
 
     public static function register(RegisterCustomerData $customerData): self
     {
-        $customer = new self();
+        $customer = new self;
         $customer->id = $customer->newUniqueId();
         $customer->full_name = $customerData->fullName;
         $customer->cpf = new Cpf($customerData->cpf)->digits();

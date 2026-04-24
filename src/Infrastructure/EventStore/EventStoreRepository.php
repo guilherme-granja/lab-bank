@@ -6,7 +6,6 @@ use Illuminate\Support\Facades\DB;
 use Src\Domain\Accounts\Models\Account;
 use Src\Domain\Identity\Models\Customer;
 use Src\Shared\Events\DomainEvent;
-use Throwable;
 
 class EventStoreRepository
 {

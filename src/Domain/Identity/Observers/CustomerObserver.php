@@ -28,7 +28,7 @@ class CustomerObserver
                 default => null,
             };
 
-            if (!is_null($event)) {
+            if (! is_null($event)) {
                 event($event);
             }
         }

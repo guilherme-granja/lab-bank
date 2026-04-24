@@ -2,7 +2,6 @@
 
 namespace Src\Domain\Identity\Events\Customer;
 
-use Illuminate\Support\Carbon;
 use Src\Domain\Identity\Models\Customer;
 use Src\Shared\Events\DomainEvent;
 

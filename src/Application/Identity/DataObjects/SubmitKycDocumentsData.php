@@ -18,14 +18,14 @@ class SubmitKycDocumentsData extends Data
 {
     public function __construct(
         #[FromRouteParameter('customerId')]
-        public string           $customerId,
+        public string $customerId,
         public DocumentTypeEnum $documentType,
-        public string           $documentNumber,
+        public string $documentNumber,
         #[File, Mimes('jpg', 'jpeg', 'png', 'pdf'), MimeTypes('image/jpeg', 'image/png', 'application/pdf'), Max(5120)]
-        public UploadedFile     $documentFront,
+        public UploadedFile $documentFront,
         #[File, Mimes('jpg', 'jpeg', 'png', 'pdf'), MimeTypes('image/jpeg', 'image/png', 'application/pdf'), Max(5120)]
-        public ?UploadedFile    $documentBack,
+        public ?UploadedFile $documentBack,
         #[File, Mimes('jpg', 'jpeg', 'png'), MimeTypes('image/jpeg', 'image/png'), Max(2048)]
-        public UploadedFile     $selfie,
+        public UploadedFile $selfie,
     ) {}
 }

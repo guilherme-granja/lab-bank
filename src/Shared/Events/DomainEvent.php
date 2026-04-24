@@ -7,9 +7,13 @@ use Illuminate\Support\Str;
 abstract class DomainEvent
 {
     public readonly string $eventId;
+
     public readonly string $occurredAt;
+
     public readonly string $eventType;
+
     public readonly ?array $metadata;
+
     private int $version = 0;
 
     public function __construct(

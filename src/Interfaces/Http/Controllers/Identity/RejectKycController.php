@@ -20,6 +20,7 @@ class RejectKycController
     public function __invoke(RejectKycData $request): JsonResponse
     {
         ($this->rejectKycHandler)($request);
+
         return response()->json(status: Response::HTTP_NO_CONTENT);
     }
 }

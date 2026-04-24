@@ -20,6 +20,7 @@ class StartReviewController
     public function __invoke(StartKycReviewData $request): JsonResponse
     {
         ($this->startKycReviewHandler)($request);
+
         return response()->json(status: Response::HTTP_NO_CONTENT);
     }
 }
