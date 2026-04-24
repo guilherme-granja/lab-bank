@@ -58,11 +58,10 @@ jobs:
       - name: Install dependencies
         run: composer install --no-interaction --prefer-dist --optimize-autoloader
 
-      - name: Prepare .env for CI
+      - name: Prepare .env.testing for CI
         run: |
-          cp .env.testing .env
-          sed -i 's/^DB_USERNAME=.*/DB_USERNAME=root/' .env
-          sed -i 's/^DB_PASSWORD=.*/DB_PASSWORD=/' .env
+          sed -i 's/^DB_USERNAME=.*/DB_USERNAME=root/' .env.testing
+          sed -i 's/^DB_PASSWORD=.*/DB_PASSWORD=/' .env.testing
 
       - name: Create databases
         run: |
@@ -124,11 +123,10 @@ jobs:
       - name: Install dependencies
         run: composer install --no-interaction --prefer-dist --optimize-autoloader
 
-      - name: Prepare .env for CI
+      - name: Prepare .env.testing for CI
         run: |
-          cp .env.testing .env
-          sed -i 's/^DB_USERNAME=.*/DB_USERNAME=root/' .env
-          sed -i 's/^DB_PASSWORD=.*/DB_PASSWORD=/' .env
+          sed -i 's/^DB_USERNAME=.*/DB_USERNAME=root/' .env.testing
+          sed -i 's/^DB_PASSWORD=.*/DB_PASSWORD=/' .env.testing
 
       - name: Create databases
         run: |
