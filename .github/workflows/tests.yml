@@ -10,8 +10,8 @@ env:
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
 
 jobs:
-  unit:
-    name: Unit Tests
+  tests:
+    name: Unit & Integration Tests
     runs-on: ubuntu-latest
 
     services:
@@ -72,76 +72,5 @@ jobs:
                 CREATE DATABASE IF NOT EXISTS db_cards_testing;
                 CREATE DATABASE IF NOT EXISTS db_investments_testing;"
 
-      - name: Run unit tests
-        run: php -dxdebug.mode=coverage ./vendor/bin/pest -c ./phpunit.xml --testsuite=Unit --coverage --min=85
-
-  integration:
-    name: Integration Tests
-    runs-on: ubuntu-latest
-
-    services:
-      mysql:
-        image: mysql:8.0
-        env:
-          MYSQL_ROOT_PASSWORD: ''
-          MYSQL_ALLOW_EMPTY_PASSWORD: yes
-        ports:
-          - 3306:3306
-        options: >-
-          --health-cmd="mysqladmin ping"
-          --health-interval=10s
-          --health-timeout=5s
-          --health-retries=5
-
-      redis:
-        image: redis:7
-        ports:
-          - 6379:6379
-        options: >-
-          --health-cmd="redis-cli ping"
-          --health-interval=10s
-          --health-timeout=5s
-          --health-retries=3
-
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Setup PHP
-        uses: shivammathur/setup-php@v2
-        with:
-          php-version: '8.4'
-          extensions: pdo, pdo_mysql, redis, mbstring, xml, ctype, json, bcmath
-          coverage: xdebug
-
-      - name: Cache Composer dependencies
-        uses: actions/cache@v4
-        with:
-          path: vendor
-          key: ${{ runner.os }}-composer-${{ hashFiles('**/composer.lock') }}
-          restore-keys: ${{ runner.os }}-composer-
-
-      - name: Install dependencies
-        run: composer install --no-interaction --prefer-dist --optimize-autoloader
-
-      - name: Prepare .env.testing for CI
-        run: |
-          sed -i 's/^DB_USERNAME=.*/DB_USERNAME=root/' .env.testing
-          sed -i 's/^DB_PASSWORD=.*/DB_PASSWORD=/' .env.testing
-
-      - name: Create databases
-        run: |
-          mysql -h 127.0.0.1 -u root \
-            -e "CREATE DATABASE IF NOT EXISTS db_app_testing;
-                CREATE DATABASE IF NOT EXISTS db_identity_testing;
-                CREATE DATABASE IF NOT EXISTS db_accounts_testing;
-                CREATE DATABASE IF NOT EXISTS db_cards_testing;
-                CREATE DATABASE IF NOT EXISTS db_investments_testing;"
-
-      - name: Run migrations
-        run: |
-          php artisan migrate --database=app --path=database/migrations/app --force
-          php artisan migrate --database=identity --path=database/migrations/identity --force
-          php artisan migrate --database=accounts --path=database/migrations/accounts --force
-
-      - name: Run integration tests
-        run: php -dxdebug.mode=coverage ./vendor/bin/pest -c ./phpunit.xml --testsuite=Feature --coverage --min=85
+      - name: Run tests
+        run: php -dxdebug.mode=coverage ./vendor/bin/pest -c ./phpunit.xml --coverage --min=85
