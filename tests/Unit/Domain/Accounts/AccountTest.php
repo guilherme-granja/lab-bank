@@ -1,10 +1,15 @@
 <?php
 
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Support\Facades\Event;
 use Src\Domain\Accounts\Enums\AccountTypeEnum;
 use Src\Domain\Accounts\Events\Account\AccountOpenedEvent;
+use Src\Domain\Accounts\Events\Account\FundsDepositedEvent;
 use Src\Domain\Accounts\Models\Account;
 use Src\Domain\Accounts\Models\AccountBalance;
+use Src\Domain\Accounts\States\Account\Blocked;
 
 beforeEach(function () {
     Event::fake();
@@ -69,5 +74,51 @@ describe('AccountBalance::register()', function () {
         $balance = AccountBalance::register($account);
 
         expect($balance->last_updated_at)->not->toBeNull();
+    });
+
+    it('belongs to an Account', function () {
+        $balance = new AccountBalance;
+        expect($balance->account())->toBeInstanceOf(BelongsTo::class);
+    });
+});
+
+describe('Account::canDeposit()', function () {
+    it('returns true when the status is Active (default)', function () {
+        $account = Account::register('customer-uuid', AccountTypeEnum::Checking, '1000000001');
+        expect($account->canDeposit())->toBeTrue();
+    });
+
+    it('returns false when the account is Blocked', function () {
+        $account = Account::register('customer-uuid', AccountTypeEnum::Checking, '1000000001');
+        $account->save();
+        $account->status->transitionTo(Blocked::class);
+
+        expect($account->canDeposit())->toBeFalse();
+    });
+});
+
+describe('Account::deposit()', function () {
+    it('records a FundsDepositedEvent and updates the timestamp', function () {
+        $account = Account::register('customer-uuid', AccountTypeEnum::Checking, '1000000001');
+        $account->pullDomainEvents();
+
+        $account->deposit(750);
+
+        $events = $account->pullDomainEvents();
+        expect($events)->toHaveCount(1);
+        expect($events[0])->toBeInstanceOf(FundsDepositedEvent::class);
+        expect($account->updated_at)->not->toBeNull();
+    });
+});
+
+describe('Account relations', function () {
+    it('balance() returns a HasOne relation', function () {
+        $account = new Account;
+        expect($account->balance())->toBeInstanceOf(HasOne::class);
+    });
+
+    it('ledgerEntries() returns a HasMany relation', function () {
+        $account = new Account;
+        expect($account->ledgerEntries())->toBeInstanceOf(HasMany::class);
     });
 });

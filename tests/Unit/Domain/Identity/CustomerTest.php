@@ -1,6 +1,7 @@
 <?php
 
 use Database\Factories\CustomerFactory;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Facades\Event;
 use Spatie\ModelStates\Exceptions\CouldNotPerformTransition;
 use Src\Application\Identity\DataObjects\AddressData;
@@ -275,5 +276,31 @@ describe('Customer default states', function () {
         $customer = CustomerFactory::new()->create();
 
         expect($customer->status)->toBeInstanceOf(PendingKyc::class);
+    });
+});
+
+describe('Customer relations', function () {
+    it('kycVerifications() returns a HasMany relation', function () {
+        $customer = new Customer;
+        expect($customer->kycVerifications())->toBeInstanceOf(HasMany::class);
+    });
+
+    it('customerAddresses() returns a HasMany relation', function () {
+        $customer = new Customer;
+        expect($customer->customerAddresses())->toBeInstanceOf(HasMany::class);
+    });
+});
+
+describe('Customer::canOperate()', function () {
+    it('returns true when kyc_status is Approved and status is Active', function () {
+        $customer = CustomerFactory::new()->withKycApproved()->create();
+
+        expect($customer->canOperate())->toBeTrue();
+    });
+
+    it('returns false when status is not Active', function () {
+        $customer = CustomerFactory::new()->create();
+
+        expect($customer->canOperate())->toBeFalse();
     });
 });
