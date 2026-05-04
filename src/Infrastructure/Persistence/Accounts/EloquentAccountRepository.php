@@ -18,4 +18,10 @@ class EloquentAccountRepository implements AccountRepositoryContract
             ->where('customer_id', $customerId)
             ->exists();
     }
+
+    public function findById(string $id): ?Account
+    {
+        return Account::query()
+            ->find($id);
+    }
 }

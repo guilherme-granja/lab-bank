@@ -35,7 +35,7 @@ use Src\Shared\Traits\AggregateRoot;
  * @property string $cpf
  * @property string $email
  * @property string $phone
- * @property Carbon $birth_date
+ * @property string $birth_date
  * @property string $mother_name
  * @property string $nationality
  * @property KycStatus $kyc_status
@@ -43,7 +43,7 @@ use Src\Shared\Traits\AggregateRoot;
  * @property string $blocked_reason
  * @property Carbon $created_at
  * @property Carbon $updated_at
- * @property Carbon $deleted_at
+ * @property Carbon|null $deleted_at
  * @property-read Collection $kycVerifications
  * @property-read Collection $customerAddresses
  */

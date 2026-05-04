@@ -45,4 +45,29 @@ class LedgerEntry extends Model
     {
         return $this->belongsTo(Account::class);
     }
+
+    public static function register(
+        string $accountId,
+        LedgerEntryTypeEnum $type,
+        int $amount,
+        int $balanceAfter,
+        string $description,
+        LedgerEntryCategory $category,
+        string $transactionId,
+        string $correlationId,
+    ): self {
+        $ledgerEntry = new self;
+        $ledgerEntry->id = $ledgerEntry->newUniqueId();
+        $ledgerEntry->account_id = $accountId;
+        $ledgerEntry->type = $type;
+        $ledgerEntry->amount = $amount;
+        $ledgerEntry->balance_after = $balanceAfter;
+        $ledgerEntry->description = $description;
+        $ledgerEntry->category = $category;
+        $ledgerEntry->transaction_id = $transactionId;
+        $ledgerEntry->correlation_id = $correlationId;
+        $ledgerEntry->occurred_at = now();
+
+        return $ledgerEntry;
+    }
 }

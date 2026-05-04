@@ -11,4 +11,19 @@ class EloquentAccountBalanceRepository implements AccountBalanceRepositoryContra
     {
         $accountBalance->save();
     }
+
+    public function findByAccoundIdForUpdate(string $accountId): ?AccountBalance
+    {
+        return AccountBalance::query()
+            ->where('account_id', $accountId)
+            ->lockForUpdate()
+            ->first();
+    }
+
+    public function updateAvailableAmount(AccountBalance $accountBalance, int $amount): AccountBalance
+    {
+        $accountBalance->available_balance += $amount;
+
+        return $accountBalance;
+    }
 }

@@ -28,6 +28,7 @@ abstract class TransactionStatus extends State
             ])
             ->default(Initiated::class)
             ->allowTransition(Initiated::class, Processing::class)
+            ->allowTransition(Initiated::class, Completed::class)
             ->allowTransition(Processing::class, Completed::class)
             ->allowTransition(Processing::class, Failed::class)
             ->allowTransition(Failed::class, Reversed::class);

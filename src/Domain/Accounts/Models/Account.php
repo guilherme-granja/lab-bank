@@ -12,7 +12,9 @@ use Illuminate\Support\Carbon;
 use Spatie\ModelStates\HasStates;
 use Src\Domain\Accounts\Enums\AccountTypeEnum;
 use Src\Domain\Accounts\Events\Account\AccountOpenedEvent;
+use Src\Domain\Accounts\Events\Account\FundsDepositedEvent;
 use Src\Domain\Accounts\Observers\AccountObserver;
+use Src\Domain\Accounts\States\Account\Active;
 use Src\Domain\Accounts\States\AccountStatus;
 use Src\Shared\Traits\AggregateRoot;
 
@@ -79,5 +81,16 @@ class Account extends Model
         $account->recordEvent(new AccountOpenedEvent($account));
 
         return $account;
+    }
+
+    public function canDeposit(): bool
+    {
+        return $this->status instanceof Active;
+    }
+
+    public function deposit(int $amount): void
+    {
+        $this->updated_at = now();
+        $this->recordEvent(new FundsDepositedEvent($this, $amount));
     }
 }
