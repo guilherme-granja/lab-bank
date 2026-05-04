@@ -4,32 +4,27 @@ namespace Src\Application\Identity\Handlers;
 
 use Illuminate\Support\Facades\DB;
 use Src\Application\Identity\DataObjects\RejectKycData;
-use Src\Domain\Identity\Contracts\CustomerRepositoryContract;
-use Src\Domain\Identity\Contracts\KycVerificationRepositoryContract;
 use Src\Domain\Identity\Exceptions\CustomerNotFoundException;
 use Src\Domain\Identity\Exceptions\KycVerificationNotFound;
+use Src\Domain\Identity\Models\Customer;
+use Src\Domain\Identity\Models\KycVerification;
 use Throwable;
 
 class RejectKycHandler
 {
-    public function __construct(
-        protected CustomerRepositoryContract $customerRepository,
-        protected KycVerificationRepositoryContract $kycVerificationRepository,
-    ) {}
-
     /**
      * @throws Throwable
      */
     public function __invoke(RejectKycData $rejectKycData): void
     {
-        $customer = $this->customerRepository->findById($rejectKycData->customerId);
+        $customer = Customer::find($rejectKycData->customerId);
 
         throw_if(
             condition: is_null($customer),
             exception: CustomerNotFoundException::class,
         );
 
-        $kycVerification = $this->kycVerificationRepository->findByCustomerId($customer->id);
+        $kycVerification = KycVerification::where('customer_id', $customer->id)->first();
 
         throw_if(
             condition: is_null($kycVerification),
@@ -40,8 +35,8 @@ class RejectKycHandler
             $customer->rejectKyc($rejectKycData->reason);
             $kycVerification->reject($rejectKycData->reason);
 
-            $this->customerRepository->save($customer);
-            $this->kycVerificationRepository->save($kycVerification);
+            $customer->save();
+            $kycVerification->save();
         });
     }
 }

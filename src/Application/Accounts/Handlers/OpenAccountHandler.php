@@ -4,8 +4,6 @@ namespace Src\Application\Accounts\Handlers;
 
 use Illuminate\Support\Facades\DB;
 use Src\Application\Accounts\DataObjects\OpenAccountData;
-use Src\Domain\Accounts\Contracts\AccountBalanceRepositoryContract;
-use Src\Domain\Accounts\Contracts\AccountRepositoryContract;
 use Src\Domain\Accounts\Enums\AccountTypeEnum;
 use Src\Domain\Accounts\Exceptions\CustomerInAccountAlreadyExistsException;
 use Src\Domain\Accounts\Models\Account;
@@ -16,8 +14,6 @@ use Throwable;
 class OpenAccountHandler
 {
     public function __construct(
-        protected AccountRepositoryContract $accountRepository,
-        protected AccountBalanceRepositoryContract $accountBalanceRepository,
         protected SequenceService $sequenceService,
     ) {}
 
@@ -27,7 +23,7 @@ class OpenAccountHandler
     public function __invoke(OpenAccountData $openAccountData): void
     {
         throw_if(
-            condition: $this->accountRepository->existsByCustomerId($openAccountData->customerId),
+            condition: Account::where('customer_id', $openAccountData->customerId)->exists(),
             exception: CustomerInAccountAlreadyExistsException::class,
         );
 
@@ -37,8 +33,8 @@ class OpenAccountHandler
             $account = Account::register($openAccountData->customerId, AccountTypeEnum::Checking, $uniqueAccountNumber);
             $accountBalance = AccountBalance::register($account);
 
-            $this->accountRepository->save($account);
-            $this->accountBalanceRepository->save($accountBalance);
+            $account->save();
+            $accountBalance->save();
         });
     }
 }

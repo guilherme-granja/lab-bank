@@ -2,6 +2,7 @@
 
 namespace Src\Domain\Identity\Models;
 
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -10,6 +11,8 @@ use Spatie\ModelStates\Exceptions\CouldNotPerformTransition;
 use Spatie\ModelStates\HasStates;
 use Src\Domain\Identity\Enums\Kyc\DocumentTypeEnum;
 use Src\Domain\Identity\States\KycVerification as KycVerificationState;
+use Src\Domain\Identity\States\KycVerification\Pending;
+use Src\Domain\Identity\States\KycVerification\Processing;
 
 /**
  * @property string $id
@@ -54,6 +57,12 @@ class KycVerification extends Model
         return $this->belongsTo(Customer::class);
     }
 
+    public function scopeActiveForCustomer(Builder $query, string $customerId): Builder
+    {
+        return $query->where('customer_id', $customerId)
+            ->whereState('status', [Pending::class, Processing::class]);
+    }
+
     public static function register(
         array $paths,
         string $customerId,
@@ -95,6 +104,6 @@ class KycVerification extends Model
      */
     public function startReview(): void
     {
-        $this->status->transitionTo(KycVerificationState\Processing::class);
+        $this->status->transitionTo(Processing::class);
     }
 }

@@ -4,10 +4,6 @@ namespace Src\Application\Accounts\Handlers;
 
 use Illuminate\Support\Facades\DB;
 use Src\Application\Accounts\DataObjects\DepositData;
-use Src\Domain\Accounts\Contracts\AccountBalanceRepositoryContract;
-use Src\Domain\Accounts\Contracts\AccountRepositoryContract;
-use Src\Domain\Accounts\Contracts\LedgerEntryRepositoryContract;
-use Src\Domain\Accounts\Contracts\TransactionRepositoryContract;
 use Src\Domain\Accounts\Enums\LedgerEntryCategory;
 use Src\Domain\Accounts\Enums\LedgerEntryTypeEnum;
 use Src\Domain\Accounts\Enums\TransactionTypeEnum;
@@ -21,19 +17,12 @@ use Throwable;
 
 class DepositHandler
 {
-    public function __construct(
-        protected AccountRepositoryContract $accountRepository,
-        protected TransactionRepositoryContract $transactionRepository,
-        protected LedgerEntryRepositoryContract $ledgerEntryRepository,
-        protected AccountBalanceRepositoryContract $accountBalanceRepository,
-    ) {}
-
     /**
      * @throws Throwable
      */
     public function __invoke(DepositData $data): void
     {
-        $account = $this->accountRepository->findById($data->accountId);
+        $account = Account::find($data->accountId);
 
         throw_if(
             condition: is_null($account),
@@ -46,22 +35,24 @@ class DepositHandler
         );
 
         DB::connection('accounts')->transaction(function () use ($account, $data) {
-            $accountBalance = $this->accountBalanceRepository->findByAccoundIdForUpdate($account->id);
+            $accountBalance = AccountBalance::where('account_id', $account->id)
+                ->lockForUpdate()
+                ->first();
             $transaction = $this->setTransaction($account, $data);
             $ledgerEntry = $this->setLedgerEntry($account, $data, $transaction, $accountBalance);
 
-            $updatedAccountBalance = $this->accountBalanceRepository->updateAvailableAmount($accountBalance, $data->amount);
+            $accountBalance->available_balance += $data->amount;
 
-            $this->transactionRepository->save($transaction);
-            $this->ledgerEntryRepository->save($ledgerEntry);
-            $this->accountBalanceRepository->save($updatedAccountBalance);
+            $transaction->save();
+            $ledgerEntry->save();
+            $accountBalance->save();
 
             $account->deposit($data->amount);
-            $this->accountRepository->save($account);
+            $account->save();
 
             $transaction->complete();
 
-            $this->transactionRepository->save($transaction);
+            $transaction->save();
         });
     }
 

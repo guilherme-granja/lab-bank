@@ -5,8 +5,6 @@ namespace Src\Application\Identity\Handlers;
 use Illuminate\Support\Facades\DB;
 use Src\Application\Identity\DataObjects\CustomerData;
 use Src\Application\Identity\DataObjects\RegisterCustomerData;
-use Src\Domain\Identity\Contracts\CustomerAddressRepositoryContract;
-use Src\Domain\Identity\Contracts\CustomerRepositoryContract;
 use Src\Domain\Identity\Exceptions\CpfAlreadyExistsException;
 use Src\Domain\Identity\Exceptions\EmailAlreadyExistsException;
 use Src\Domain\Identity\Models\Customer;
@@ -16,11 +14,6 @@ use Throwable;
 
 readonly class RegisterCustomerHandler
 {
-    public function __construct(
-        protected CustomerRepositoryContract $customerRepository,
-        protected CustomerAddressRepositoryContract $customerAddressRepository,
-    ) {}
-
     /**
      * @throws Throwable
      */
@@ -28,11 +21,11 @@ readonly class RegisterCustomerHandler
     {
         $cpfDigits = new Cpf($customerData->cpf)->digits();
 
-        if ($this->customerRepository->existsByCpf($cpfDigits)) {
+        if (Customer::where('cpf', $cpfDigits)->exists()) {
             throw new CpfAlreadyExistsException($customerData->cpf);
         }
 
-        if ($this->customerRepository->existsByEmail($customerData->email)) {
+        if (Customer::where('email', $customerData->email)->exists()) {
             throw new EmailAlreadyExistsException($customerData->email);
         }
 
@@ -41,8 +34,8 @@ readonly class RegisterCustomerHandler
                 $customer = Customer::register($customerData);
                 $customerAddress = CustomerAddress::register($customerData->address, $customer);
 
-                $this->customerRepository->save($customer);
-                $this->customerAddressRepository->save($customerAddress);
+                $customer->save();
+                $customerAddress->save();
 
                 return $customer;
             });

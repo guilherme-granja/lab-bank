@@ -4,10 +4,9 @@ namespace Src\Application\Identity\Handlers;
 
 use Illuminate\Support\Facades\DB;
 use Src\Application\Identity\DataObjects\SubmitKycDocumentsData;
-use Src\Domain\Identity\Contracts\CustomerRepositoryContract;
-use Src\Domain\Identity\Contracts\KycVerificationRepositoryContract;
 use Src\Domain\Identity\Exceptions\CustomerCantSubmitKyc;
 use Src\Domain\Identity\Exceptions\CustomerNotFoundException;
+use Src\Domain\Identity\Models\Customer;
 use Src\Domain\Identity\Models\KycVerification;
 use Src\Infrastructure\Storage\KycDocumentStorage;
 use Throwable;
@@ -15,8 +14,6 @@ use Throwable;
 readonly class SubmitKycDocumentsHandler
 {
     public function __construct(
-        protected CustomerRepositoryContract $customerRepository,
-        protected KycVerificationRepositoryContract $kycVerificationRepository,
         protected KycDocumentStorage $kycDocumentStorage,
     ) {}
 
@@ -25,7 +22,7 @@ readonly class SubmitKycDocumentsHandler
      */
     public function __invoke(SubmitKycDocumentsData $submitKycDocumentsData): void
     {
-        $customer = $this->customerRepository->findById($submitKycDocumentsData->customerId);
+        $customer = Customer::find($submitKycDocumentsData->customerId);
 
         if (is_null($customer)) {
             throw new CustomerNotFoundException;
@@ -45,7 +42,7 @@ readonly class SubmitKycDocumentsHandler
         );
 
         DB::connection('identity')->transaction(function () use ($kycVerification) {
-            $this->kycVerificationRepository->save($kycVerification);
+            $kycVerification->save();
         });
     }
 }
