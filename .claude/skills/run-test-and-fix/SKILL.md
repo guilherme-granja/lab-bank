@@ -3,17 +3,21 @@ name: run-test-and-fix
 description: Run full test suite and fix all errors
 ---
 
-# Run Tests and Fix Errors
+# Testing and Fixing
+
+## Context Rule
+Only read files directly related to the failing test or error.
+Do not load unrelated source files into context.
+Do not read vendor/ directory.
 
 ## Step 1 — Run the test suite
-Execute the following command and capture the output:
 ```bash
-php -dxdebug.mode=coverage ./vendor/bin/pest -c ./phpunit.xml --coverage
+php artisan test
 ```
 
 ## Step 2 — Analyze and fix errors
 If any test fails:
-- Read the full error output carefully
+- Read only the files mentioned in the error output
 - Identify the root cause (wrong assertion, missing dependency, wrong mock, etc.)
 - Apply the fix directly in the source or test file
 
@@ -24,12 +28,17 @@ If a test requires model creation and no factory exists yet:
 - Use the factory in the test via `ModelName::factory()->create()` or `->make()`
 - Never instantiate models manually with `new ModelName([...])` in tests
 
-## Step 3 — Re-run to confirm
-After fixing, re-run the same command to verify all tests pass.
-Repeat fix → re-run until the suite is fully green.
+## Step 3 — Re-run once
+After applying all fixes, run the suite one more time:
+```bash
+php artisan test
+```
+
+If tests pass → done.
+If tests still fail → do NOT run again. Go to Step 4.
 
 ## Step 4 — Summarize
 Report:
 - What was broken and why
 - What was fixed (file + change)
-- Any remaining issues if the suite could not be made fully green
+- Any remaining issues that could not be resolved
