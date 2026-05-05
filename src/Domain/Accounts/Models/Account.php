@@ -3,6 +3,7 @@
 namespace Src\Domain\Accounts\Models;
 
 use Illuminate\Database\Eloquent\Attributes\ObservedBy;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -45,6 +46,21 @@ class Account extends Model
 
     protected $connection = 'accounts';
 
+    protected $fillable = [
+        'customer_id',
+        'account_number',
+        'branch',
+        'bank_code',
+        'account_type',
+        'status',
+        'blocked_reason',
+        'activated_at',
+        'closed_at',
+        'deleted_at',
+        'created_at',
+        'updated_at',
+    ];
+
     protected function casts(): array
     {
         return [
@@ -69,6 +85,11 @@ class Account extends Model
         return $this->hasOne(AccountBalance::class);
     }
 
+    protected function scopeExistsForCustomer(Builder $query, string $customerId): bool
+    {
+        return $query->where('customer_id', $customerId)->exists();
+    }
+
     public static function register(string $customerId, AccountTypeEnum $accountTypeEnum, string $accountNumber): self
     {
         $account = new self;
@@ -91,6 +112,7 @@ class Account extends Model
     public function deposit(int $amount): void
     {
         $this->updated_at = now();
+
         $this->recordEvent(new FundsDepositedEvent($this, $amount));
     }
 }

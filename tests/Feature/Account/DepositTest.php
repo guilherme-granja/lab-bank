@@ -1,11 +1,10 @@
 <?php
 
+use Database\Factories\AccountFactory;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Str;
-use Src\Domain\Accounts\Enums\AccountTypeEnum;
 use Src\Domain\Accounts\Exceptions\AccountNotActiveException;
 use Src\Domain\Accounts\Exceptions\AccountNotFoundException;
-use Src\Domain\Accounts\Models\Account;
 use Src\Domain\Accounts\Models\AccountBalance;
 use Src\Domain\Accounts\Models\LedgerEntry;
 use Src\Domain\Accounts\Models\Transaction;
@@ -15,17 +14,11 @@ use Src\Interfaces\Events\Account\FundsWereDeposited;
 beforeEach(function () {
     Event::fake();
 
-    $this->account = Account::register(
-        customerId: '11111111-1111-1111-1111-111111111111',
-        accountTypeEnum: AccountTypeEnum::Checking,
-        accountNumber: '1000000123',
-    );
-    $this->account->save();
-    $this->account->pullDomainEvents();
+    $this->account = AccountFactory::new()->create();
 
     AccountBalance::register($this->account)->save();
 
-    $this->headers = ['X-Correlation-ID' => (string) Str::uuid()];
+    $this->headers = ['X-Correlation-ID' => Str::uuid()->toString()];
 });
 
 describe('POST /api/v1/account/{accountId}/deposit', function () {

@@ -35,6 +35,22 @@ class Transaction extends Model
 
     protected $connection = 'accounts';
 
+    protected $fillable = [
+        'correlation_id',
+        'origin_account_id',
+        'destination_account_id',
+        'amount',
+        'currency',
+        'type',
+        'status',
+        'description',
+        'failure_reason',
+        'metadata',
+        'completed_at',
+        'created_at',
+        'updated_at',
+    ];
+
     protected function casts(): array
     {
         return [
@@ -46,26 +62,6 @@ class Transaction extends Model
             'created_at' => 'datetime',
             'updated_at' => 'datetime',
         ];
-    }
-
-    public static function register(
-        string $correlationId,
-        int $amount,
-        TransactionTypeEnum $type,
-        ?string $originAccountId = null,
-        ?string $destinationAccountId = null,
-        ?string $description = null,
-    ): self {
-        $transaction = new self;
-        $transaction->id = $transaction->newUniqueId();
-        $transaction->correlation_id = $correlationId;
-        $transaction->amount = $amount;
-        $transaction->type = $type;
-        $transaction->origin_account_id = $originAccountId;
-        $transaction->destination_account_id = $destinationAccountId;
-        $transaction->description = $description;
-
-        return $transaction;
     }
 
     /**
@@ -81,7 +77,8 @@ class Transaction extends Model
      */
     public function complete(): void
     {
-        $this->completed_at = now();
+        $this->update(['completed_at' => now()]);
+
         $this->status->transitionTo(Completed::class);
     }
 }

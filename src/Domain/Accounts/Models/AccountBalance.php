@@ -23,6 +23,12 @@ class AccountBalance extends Model
 
     protected $connection = 'accounts';
 
+    protected $fillable = [
+        'available_balance',
+        'blocked_amount',
+        'last_updated_at',
+    ];
+
     protected function casts(): array
     {
         return [
@@ -48,5 +54,13 @@ class AccountBalance extends Model
         $balance->last_updated_at = now();
 
         return $balance;
+    }
+
+    public function updateAvailableBalance(int $amount): void
+    {
+        $this->update([
+            'available_balance' => $this->available_balance + $amount,
+            'last_updated_at' => now(),
+        ]);
     }
 }

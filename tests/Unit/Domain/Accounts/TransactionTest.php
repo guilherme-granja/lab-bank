@@ -7,37 +7,45 @@ use Src\Domain\Accounts\States\Transaction\Completed;
 use Src\Domain\Accounts\States\Transaction\Initiated;
 use Src\Domain\Accounts\States\Transaction\Processing;
 
-describe('Transaction::register()', function () {
+describe('Transaction::create()', function () {
     it('sets the provided fields and assigns a uuid', function () {
-        $correlationId = (string) Str::uuid();
-        $transaction = Transaction::register(
-            correlationId: $correlationId,
-            amount: 1500,
-            type: TransactionTypeEnum::Deposit,
-            originAccountId: 'origin-uuid',
-            destinationAccountId: 'destination-uuid',
-            description: 'salary',
-        );
+        $correlationId = Str::uuid()->toString();
+        $transaction = Transaction::create([
+            'correlation_id' => $correlationId,
+            'amount' => 1500,
+            'type' => TransactionTypeEnum::Deposit,
+            'origin_account_id' => 'origin-uuid',
+            'destination_account_id' => 'destination-uuid',
+            'description' => 'salary',
+        ])->refresh();
 
-        expect($transaction->correlation_id)->toBe($correlationId);
-        expect($transaction->amount)->toBe(1500);
-        expect($transaction->type)->toBe(TransactionTypeEnum::Deposit);
-        expect($transaction->origin_account_id)->toBe('origin-uuid');
-        expect($transaction->destination_account_id)->toBe('destination-uuid');
-        expect($transaction->description)->toBe('salary');
-        expect($transaction->id)->toMatch('/^[0-9a-f-]{36}$/');
+        expect($transaction->correlation_id)->toBe($correlationId)
+            ->and($transaction->amount)->toBe(1500)
+            ->and($transaction->type)->toBe(TransactionTypeEnum::Deposit)
+            ->and($transaction->origin_account_id)->toBe('origin-uuid')
+            ->and($transaction->destination_account_id)->toBe('destination-uuid')
+            ->and($transaction->description)->toBe('salary')
+            ->and($transaction->id)->toMatch('/^[0-9a-f-]{36}$/');
     });
 
     it('defaults status to Initiated', function () {
-        $transaction = Transaction::register((string) Str::uuid(), 100, TransactionTypeEnum::Deposit);
+        $transaction = Transaction::create([
+            'correlation_id' => Str::uuid()->toString(),
+            'amount' => 100,
+            'type' => TransactionTypeEnum::Deposit,
+        ])->refresh();
+
         expect($transaction->status)->toBeInstanceOf(Initiated::class);
     });
 });
 
 describe('Transaction::process()', function () {
     it('transitions status from Initiated to Processing', function () {
-        $transaction = Transaction::register((string) Str::uuid(), 100, TransactionTypeEnum::Deposit);
-        $transaction->save();
+        $transaction = Transaction::create([
+            'correlation_id' => Str::uuid()->toString(),
+            'amount' => 100,
+            'type' => TransactionTypeEnum::Deposit,
+        ])->refresh();
 
         $transaction->process();
 
@@ -47,12 +55,15 @@ describe('Transaction::process()', function () {
 
 describe('Transaction::complete()', function () {
     it('transitions status to Completed and sets completed_at', function () {
-        $transaction = Transaction::register((string) Str::uuid(), 100, TransactionTypeEnum::Deposit);
-        $transaction->save();
+        $transaction = Transaction::create([
+            'correlation_id' => Str::uuid()->toString(),
+            'amount' => 100,
+            'type' => TransactionTypeEnum::Deposit,
+        ]);
 
         $transaction->complete();
 
-        expect($transaction->status)->toBeInstanceOf(Completed::class);
-        expect($transaction->completed_at)->not->toBeNull();
+        expect($transaction->status)->toBeInstanceOf(Completed::class)
+            ->and($transaction->completed_at)->not->toBeNull();
     });
 });

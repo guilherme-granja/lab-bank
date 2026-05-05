@@ -57,7 +57,7 @@ class KycVerification extends Model
         return $this->belongsTo(Customer::class);
     }
 
-    public function scopeActiveForCustomer(Builder $query, string $customerId): Builder
+    protected function scopeActiveForCustomer(Builder $query, string $customerId): Builder
     {
         return $query->where('customer_id', $customerId)
             ->whereState('status', [Pending::class, Processing::class]);

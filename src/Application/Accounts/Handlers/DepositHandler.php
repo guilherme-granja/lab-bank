@@ -11,7 +11,6 @@ use Src\Domain\Accounts\Exceptions\AccountNotActiveException;
 use Src\Domain\Accounts\Exceptions\AccountNotFoundException;
 use Src\Domain\Accounts\Models\Account;
 use Src\Domain\Accounts\Models\AccountBalance;
-use Src\Domain\Accounts\Models\LedgerEntry;
 use Src\Domain\Accounts\Models\Transaction;
 use Throwable;
 
@@ -38,46 +37,33 @@ class DepositHandler
             $accountBalance = AccountBalance::where('account_id', $account->id)
                 ->lockForUpdate()
                 ->first();
-            $transaction = $this->setTransaction($account, $data);
-            $ledgerEntry = $this->setLedgerEntry($account, $data, $transaction, $accountBalance);
 
-            $accountBalance->available_balance += $data->amount;
+            $accountBalance->updateAvailableBalance($data->amount);
+            $accountBalance->refresh();
 
-            $transaction->save();
-            $ledgerEntry->save();
-            $accountBalance->save();
+            $transaction = Transaction::create([
+                'correlation_id' => $data->getCorrelationId(),
+                'amount' => $data->amount,
+                'type' => TransactionTypeEnum::Deposit,
+                'origin_account_id' => $account->id,
+                'description' => $data->description,
+            ]);
 
-            $account->deposit($data->amount);
-            $account->save();
+            $account->ledgerEntries()->create([
+                'type' => LedgerEntryTypeEnum::Credit,
+                'amount' => $data->amount,
+                'balance_after' => $accountBalance->available_balance,
+                'description' => $data->description,
+                'category' => LedgerEntryCategory::Deposit,
+                'transaction_id' => $transaction->id,
+                'correlation_id' => $data->getCorrelationId(),
+                'occurred_at' => now(),
+            ]);
 
             $transaction->complete();
 
-            $transaction->save();
+            $account->deposit($data->amount);
+            $account->save();
         });
-    }
-
-    private function setTransaction(Account $account, DepositData $data): Transaction
-    {
-        return Transaction::register(
-            correlationId: $data->getCorrelationId(),
-            amount: $data->amount,
-            type: TransactionTypeEnum::Deposit,
-            originAccountId: $account->id,
-            description: $data->description,
-        );
-    }
-
-    private function setLedgerEntry(Account $account, DepositData $data, Transaction $transaction, AccountBalance $accountBalance): LedgerEntry
-    {
-        return LedgerEntry::register(
-            accountId: $account->id,
-            type: LedgerEntryTypeEnum::Credit,
-            amount: $data->amount,
-            balanceAfter: $accountBalance->available_balance + $data->amount,
-            description: $data->description,
-            category: LedgerEntryCategory::Deposit,
-            transactionId: $transaction->id,
-            correlationId: $data->getCorrelationId(),
-        );
     }
 }
