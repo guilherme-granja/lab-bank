@@ -35,7 +35,7 @@ use Src\Shared\Traits\AggregateRoot;
  * @property string $cpf
  * @property string $email
  * @property string $phone
- * @property string $birth_date
+ * @property Carbon $birth_date
  * @property string $mother_name
  * @property string $nationality
  * @property KycStatus $kyc_status
@@ -88,7 +88,7 @@ class Customer extends Model
         $customer->cpf = new Cpf($customerData->cpf)->digits();
         $customer->email = $customerData->email;
         $customer->phone = $customerData->phone;
-        $customer->birth_date = $customerData->birthDate;
+        $customer->birth_date = Carbon::parse($customerData->birthDate);
         $customer->mother_name = $customerData->motherName;
         $customer->nationality = $customerData->nationality;
 

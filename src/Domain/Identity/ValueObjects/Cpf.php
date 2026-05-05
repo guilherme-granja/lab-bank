@@ -16,7 +16,7 @@ class Cpf extends ValueObject
 
     public function equals(ValueObject $other): bool
     {
-        return $this->cpf === $other->cpf;
+        return $other instanceof self && $this->cpf === $other->cpf;
     }
 
     public function toString(): string
