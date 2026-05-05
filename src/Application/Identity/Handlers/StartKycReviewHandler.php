@@ -24,6 +24,7 @@ class StartKycReviewHandler
             exception: CustomerNotFoundException::class,
         );
 
+        /** @var KycVerification $kycVerification */
         $kycVerification = KycVerification::activeForCustomer($customer->id)->first();
 
         throw_if(
@@ -34,9 +35,6 @@ class StartKycReviewHandler
         DB::connection('identity')->transaction(function () use ($customer, $kycVerification) {
             $customer->startKycReview();
             $kycVerification->startReview();
-
-            $customer->save();
-            $kycVerification->save();
         });
     }
 }

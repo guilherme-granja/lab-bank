@@ -8,7 +8,6 @@ use Src\Application\Identity\DataObjects\RegisterCustomerData;
 use Src\Domain\Identity\Exceptions\CpfAlreadyExistsException;
 use Src\Domain\Identity\Exceptions\EmailAlreadyExistsException;
 use Src\Domain\Identity\Models\Customer;
-use Src\Domain\Identity\Models\CustomerAddress;
 use Src\Domain\Identity\ValueObjects\Cpf;
 use Throwable;
 
@@ -29,16 +28,31 @@ readonly class RegisterCustomerHandler
             throw new EmailAlreadyExistsException($customerData->email);
         }
 
-        $customer = DB::connection('identity')
-            ->transaction(function () use ($customerData) {
-                $customer = Customer::register($customerData);
-                $customerAddress = CustomerAddress::register($customerData->address, $customer);
+        $customer = DB::connection('identity')->transaction(function () use ($customerData) {
+            $customer = Customer::create([
+                'full_name' => $customerData->fullName,
+                'cpf' => $customerData->cpf,
+                'email' => $customerData->email,
+                'phone' => $customerData->phone,
+                'birth_date' => $customerData->birthDate,
+                'mother_name' => $customerData->motherName,
+                'nationality' => $customerData->nationality,
+            ]);
 
-                $customer->save();
-                $customerAddress->save();
+            $customer->customerAddresses()->create([
+                'zip_code' => $customerData->address->zipCode,
+                'street' => $customerData->address->street,
+                'number' => $customerData->address->number,
+                'complement' => $customerData->address->complement,
+                'neighborhood' => $customerData->address->neighborhood,
+                'city' => $customerData->address->city,
+                'state' => $customerData->address->state,
+                'country' => $customerData->address->country,
+                'is_primary' => $customerData->address->isPrimary,
+            ]);
 
-                return $customer;
-            });
+            return $customer;
+        });
 
         return CustomerData::fromModel($customer->refresh());
     }

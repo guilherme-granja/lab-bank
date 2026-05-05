@@ -52,6 +52,8 @@ class KycVerification extends Model
         ];
     }
 
+    protected $guarded = ['id', 'customer_id'];
+
     public function customer(): BelongsTo
     {
         return $this->belongsTo(Customer::class);
@@ -63,30 +65,14 @@ class KycVerification extends Model
             ->whereState('status', [Pending::class, Processing::class]);
     }
 
-    public static function register(
-        array $paths,
-        string $customerId,
-        DocumentTypeEnum $documentType,
-        string $documentNumber,
-    ): self {
-        $kycVerification = new self;
-        $kycVerification->customer_id = $customerId;
-        $kycVerification->document_type = $documentType;
-        $kycVerification->document_number = $documentNumber;
-        $kycVerification->document_front_url = $paths['document_front_url'];
-        $kycVerification->document_back_url = $paths['document_back_url'];
-        $kycVerification->selfie_url = $paths['document_selfie_url'];
-
-        return $kycVerification;
-    }
-
     /**
      * @throws CouldNotPerformTransition
      */
     public function approve(): void
     {
+        $this->update(['reviewed_at' => now()]);
+
         $this->status->transitionTo(KycVerificationState\Approved::class);
-        $this->reviewed_at = now();
     }
 
     /**
@@ -94,9 +80,12 @@ class KycVerification extends Model
      */
     public function reject(string $reason): void
     {
+        $this->update([
+            'reviewed_at' => now(),
+            'rejection_reason' => $reason,
+        ]);
+
         $this->status->transitionTo(KycVerificationState\Rejected::class);
-        $this->reviewed_at = now();
-        $this->rejection_reason = $reason;
     }
 
     /**

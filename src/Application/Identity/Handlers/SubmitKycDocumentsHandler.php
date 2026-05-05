@@ -34,15 +34,14 @@ readonly class SubmitKycDocumentsHandler
 
         $paths = $this->kycDocumentStorage->uploadKycDocuments($submitKycDocumentsData, $customer->id);
 
-        $kycVerification = KycVerification::register(
-            paths: $paths,
-            customerId: $customer->id,
-            documentType: $submitKycDocumentsData->documentType,
-            documentNumber: $submitKycDocumentsData->documentNumber,
-        );
-
-        DB::connection('identity')->transaction(function () use ($kycVerification) {
-            $kycVerification->save();
+        DB::connection('identity')->transaction(function () use ($paths, $submitKycDocumentsData) {
+            KycVerification::create([
+                'document_type' => $submitKycDocumentsData->documentType,
+                'document_number' => $submitKycDocumentsData->documentNumber,
+                'document_front_url' => $paths->documentFrontUrl,
+                'document_back_url' => $paths->documentBackUrl,
+                'selfie_url' => $paths->documentSelfieUrl,
+            ]);
         });
     }
 }

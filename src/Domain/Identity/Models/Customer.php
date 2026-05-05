@@ -11,10 +11,8 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Carbon;
 use Spatie\ModelStates\Exceptions\CouldNotPerformTransition;
 use Spatie\ModelStates\HasStates;
-use Src\Application\Identity\DataObjects\RegisterCustomerData;
 use Src\Domain\Identity\Events\Customer\CustomerActivatedEvent;
 use Src\Domain\Identity\Events\Customer\CustomerBlockedEvent;
-use Src\Domain\Identity\Events\Customer\CustomerRegisteredEvent;
 use Src\Domain\Identity\Events\Customer\KycApprovedEvent;
 use Src\Domain\Identity\Events\Customer\KycRejectedEvent;
 use Src\Domain\Identity\Observers\CustomerObserver;
@@ -26,7 +24,6 @@ use Src\Domain\Identity\States\Kyc\Processing;
 use Src\Domain\Identity\States\Kyc\Rejected;
 use Src\Domain\Identity\States\KycStatus;
 use Src\Domain\Identity\States\Status;
-use Src\Domain\Identity\ValueObjects\Cpf;
 use Src\Shared\Traits\AggregateRoot;
 
 /**
@@ -70,6 +67,8 @@ class Customer extends Model
         ];
     }
 
+    protected $guarded = ['id'];
+
     public function kycVerifications(): HasMany|self
     {
         return $this->hasMany(KycVerification::class);
@@ -78,23 +77,6 @@ class Customer extends Model
     public function customerAddresses(): HasMany|self
     {
         return $this->hasMany(CustomerAddress::class);
-    }
-
-    public static function register(RegisterCustomerData $customerData): self
-    {
-        $customer = new self;
-        $customer->id = $customer->newUniqueId();
-        $customer->full_name = $customerData->fullName;
-        $customer->cpf = new Cpf($customerData->cpf)->digits();
-        $customer->email = $customerData->email;
-        $customer->phone = $customerData->phone;
-        $customer->birth_date = Carbon::parse($customerData->birthDate);
-        $customer->mother_name = $customerData->motherName;
-        $customer->nationality = $customerData->nationality;
-
-        $customer->recordEvent(new CustomerRegisteredEvent($customer));
-
-        return $customer;
     }
 
     /**
@@ -111,6 +93,7 @@ class Customer extends Model
     public function approveKyc(): void
     {
         $this->kyc_status->transitionTo(Approved::class);
+
         $this->recordEvent(new KycApprovedEvent($this));
     }
 
@@ -120,6 +103,7 @@ class Customer extends Model
     public function rejectKyc(string $reason): void
     {
         $this->kyc_status->transitionTo(Rejected::class);
+
         $this->recordEvent(new KycRejectedEvent($this, $reason));
     }
 
@@ -129,6 +113,7 @@ class Customer extends Model
     public function block(string $reason): void
     {
         $this->status->transitionTo(Blocked::class);
+
         $this->recordEvent(new CustomerBlockedEvent($this, $reason));
     }
 
@@ -150,6 +135,7 @@ class Customer extends Model
     public function activateAccount(): void
     {
         $this->status->transitionTo(Active::class);
+
         $this->recordEvent(new CustomerActivatedEvent($this));
     }
 }

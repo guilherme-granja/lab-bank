@@ -34,9 +34,6 @@ class RejectKycHandler
         DB::connection('identity')->transaction(function () use ($customer, $kycVerification, $rejectKycData) {
             $customer->rejectKyc($rejectKycData->reason);
             $kycVerification->reject($rejectKycData->reason);
-
-            $customer->save();
-            $kycVerification->save();
         });
     }
 }

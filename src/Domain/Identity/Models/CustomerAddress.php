@@ -36,6 +36,8 @@ class CustomerAddress extends Model
         'updated_at' => 'datetime',
     ];
 
+    protected $guarded = ['id', 'customer_id'];
+
     public function customer(): BelongsTo
     {
         return $this->belongsTo(Customer::class);

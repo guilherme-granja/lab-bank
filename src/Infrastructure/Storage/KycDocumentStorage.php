@@ -5,6 +5,7 @@ namespace Src\Infrastructure\Storage;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
+use Src\Application\Identity\DataObjects\KycDocumentStorageData;
 use Src\Application\Identity\DataObjects\SubmitKycDocumentsData;
 use Src\Domain\Identity\Exceptions\DocumentNotUploaded;
 use Throwable;
@@ -14,7 +15,7 @@ class KycDocumentStorage
     /**
      * @throws Throwable
      */
-    public function uploadKycDocuments(SubmitKycDocumentsData $submitKycDocumentsData, string $customerId): array
+    public function uploadKycDocuments(SubmitKycDocumentsData $submitKycDocumentsData, string $customerId): KycDocumentStorageData
     {
         $kycDocuments['document_front_url'] = $this->upload(
             file: $submitKycDocumentsData->documentFront,
@@ -53,7 +54,7 @@ class KycDocumentStorage
             'document_selfie'
         );
 
-        return $kycDocuments;
+        return KycDocumentStorageData::from($kycDocuments);
     }
 
     private function upload(UploadedFile $file, string $customerId, string $type): false|string

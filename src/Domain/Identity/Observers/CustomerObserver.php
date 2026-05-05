@@ -16,7 +16,17 @@ use Src\Interfaces\Events\Identity\KycWasRejected;
 
 class CustomerObserver
 {
-    public function saved(Customer $customer): void
+    public function created(Customer $customer): void
+    {
+        $this->dispatchEvent($customer);
+    }
+
+    public function updated(Customer $customer): void
+    {
+        $this->dispatchEvent($customer);
+    }
+
+    private function dispatchEvent(Customer $customer): void
     {
         foreach ($customer->pullDomainEvents() as $domainEvent) {
             $event = match ($domainEvent::class) {

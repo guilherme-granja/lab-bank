@@ -24,6 +24,7 @@ class ApproveKycHandler
             exception: CustomerNotFoundException::class,
         );
 
+        /** @var KycVerification|null $kycVerification */
         $kycVerification = KycVerification::activeForCustomer($customer->id)->first();
 
         throw_if(
@@ -35,9 +36,6 @@ class ApproveKycHandler
             $customer->approveKyc();
             $customer->activateAccount();
             $kycVerification->approve();
-
-            $customer->save();
-            $kycVerification->save();
         });
     }
 }
