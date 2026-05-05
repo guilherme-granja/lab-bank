@@ -26,6 +26,11 @@ class CustomerObserver
         $this->dispatchEvent($customer);
     }
 
+    public function saved(Customer $customer): void
+    {
+        $this->dispatchEvent($customer);
+    }
+
     private function dispatchEvent(Customer $customer): void
     {
         foreach ($customer->pullDomainEvents() as $domainEvent) {

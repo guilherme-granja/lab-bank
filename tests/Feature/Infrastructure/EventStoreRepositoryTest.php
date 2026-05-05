@@ -1,12 +1,13 @@
 <?php
 
+use Database\Factories\AccountFactory;
 use Database\Factories\CustomerFactory;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Event;
-use Src\Domain\Accounts\Enums\AccountTypeEnum;
 use Src\Domain\Accounts\Events\Account\AccountOpenedEvent;
 use Src\Domain\Accounts\Models\Account;
 use Src\Domain\Identity\Events\Customer\CustomerRegisteredEvent;
+use Src\Domain\Identity\Models\Customer;
 use Src\Infrastructure\EventStore\EventStoreRepository;
 use Src\Shared\Events\DomainEvent;
 
@@ -30,7 +31,7 @@ describe('EventStoreRepository', function () {
     });
 
     it('persists an account domain event to the accounts domain_events table', function () {
-        $account = Account::register('customer-uuid', AccountTypeEnum::Checking, '1000000001');
+        $account = AccountFactory::new()->create();
         $account->pullDomainEvents();
         $domainEvent = new AccountOpenedEvent($account);
 
@@ -59,8 +60,8 @@ describe('EventStoreRepository', function () {
             ->values()
             ->toArray();
 
-        expect($versions[0])->toBe(1);
-        expect($versions[1])->toBe(2);
+        expect($versions[0])->toBe(1)
+            ->and($versions[1])->toBe(2);
     });
 
     it('throws InvalidArgumentException for an unknown aggregate type', function () {

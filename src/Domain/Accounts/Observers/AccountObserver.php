@@ -10,7 +10,22 @@ use Src\Interfaces\Events\Account\FundsWereDeposited;
 
 class AccountObserver
 {
+    public function created(Account $account): void
+    {
+        $this->dispatchEvent($account);
+    }
+
+    public function updated(Account $account): void
+    {
+        $this->dispatchEvent($account);
+    }
+
     public function saved(Account $account): void
+    {
+        $this->dispatchEvent($account);
+    }
+
+    private function dispatchEvent(Account $account): void
     {
         foreach ($account->pullDomainEvents() as $domainEvent) {
             $event = match ($domainEvent::class) {

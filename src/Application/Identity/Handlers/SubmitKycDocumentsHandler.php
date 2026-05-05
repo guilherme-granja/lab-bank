@@ -7,7 +7,6 @@ use Src\Application\Identity\DataObjects\SubmitKycDocumentsData;
 use Src\Domain\Identity\Exceptions\CustomerCantSubmitKyc;
 use Src\Domain\Identity\Exceptions\CustomerNotFoundException;
 use Src\Domain\Identity\Models\Customer;
-use Src\Domain\Identity\Models\KycVerification;
 use Src\Infrastructure\Storage\KycDocumentStorage;
 use Throwable;
 
@@ -34,8 +33,8 @@ readonly class SubmitKycDocumentsHandler
 
         $paths = $this->kycDocumentStorage->uploadKycDocuments($submitKycDocumentsData, $customer->id);
 
-        DB::connection('identity')->transaction(function () use ($paths, $submitKycDocumentsData) {
-            KycVerification::create([
+        DB::connection('identity')->transaction(function () use ($paths, $submitKycDocumentsData, $customer) {
+            $customer->kycVerifications()->create([
                 'document_type' => $submitKycDocumentsData->documentType,
                 'document_number' => $submitKycDocumentsData->documentNumber,
                 'document_front_url' => $paths->documentFrontUrl,

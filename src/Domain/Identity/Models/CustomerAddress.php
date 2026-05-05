@@ -6,7 +6,6 @@ use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Support\Carbon;
-use Src\Application\Identity\DataObjects\AddressData;
 
 /**
  * @property string $id
@@ -41,23 +40,5 @@ class CustomerAddress extends Model
     public function customer(): BelongsTo
     {
         return $this->belongsTo(Customer::class);
-    }
-
-    public static function register(AddressData $addressData, Customer $customer): self
-    {
-        $customerAddress = new self;
-        $customerAddress->id = $customerAddress->newUniqueId();
-        $customerAddress->customer_id = $customer->id;
-        $customerAddress->zip_code = $addressData->zipCode;
-        $customerAddress->street = $addressData->street;
-        $customerAddress->number = $addressData->number;
-        $customerAddress->complement = $addressData->complement;
-        $customerAddress->neighborhood = $addressData->neighborhood;
-        $customerAddress->city = $addressData->city;
-        $customerAddress->state = $addressData->state;
-        $customerAddress->country = $addressData->country;
-        $customerAddress->is_primary = $addressData->isPrimary;
-
-        return $customerAddress;
     }
 }

@@ -4,6 +4,7 @@ use Database\Factories\CustomerFactory;
 use Database\Factories\KycVerificationFactory;
 use Illuminate\Support\Facades\Event;
 use Spatie\ModelStates\Exceptions\CouldNotPerformTransition;
+use Src\Application\Identity\DataObjects\KycDocumentStorageData;
 use Src\Domain\Identity\Enums\Kyc\DocumentTypeEnum;
 use Src\Domain\Identity\Models\KycVerification;
 use Src\Domain\Identity\States\KycVerification\Approved;
@@ -15,44 +16,46 @@ beforeEach(function () {
     Event::fake();
 });
 
-describe('KycVerification::register()', function () {
+describe('KycVerification::create()', function () {
     it('maps all provided fields onto the new instance', function () {
         $customer = CustomerFactory::new()->create();
 
-        $paths = [
+        $paths = KycDocumentStorageData::from([
             'document_front_url' => 'kyc/customer/front.jpg',
             'document_back_url' => 'kyc/customer/back.jpg',
             'document_selfie_url' => 'kyc/customer/selfie.jpg',
-        ];
+        ]);
 
-        $verification = KycVerification::register(
-            paths: $paths,
-            customerId: $customer->id,
-            documentType: DocumentTypeEnum::Cnh,
-            documentNumber: '12345678901',
-        );
+        $verification = $customer->kycVerifications()->create([
+            'document_type' => DocumentTypeEnum::Cnh,
+            'document_number' => '12345678901',
+            'document_front_url' => $paths->documentFrontUrl,
+            'document_back_url' => $paths->documentBackUrl,
+            'selfie_url' => $paths->documentSelfieUrl,
+        ]);
 
-        expect($verification->customer_id)->toBe($customer->id);
-        expect($verification->document_type)->toBe(DocumentTypeEnum::Cnh);
-        expect($verification->document_number)->toBe('12345678901');
-        expect($verification->document_front_url)->toBe('kyc/customer/front.jpg');
-        expect($verification->document_back_url)->toBe('kyc/customer/back.jpg');
-        expect($verification->selfie_url)->toBe('kyc/customer/selfie.jpg');
+        expect($verification->customer_id)->toBe($customer->id)
+            ->and($verification->document_type)->toBe(DocumentTypeEnum::Cnh)
+            ->and($verification->document_number)->toBe('12345678901')
+            ->and($verification->document_front_url)->toBe('kyc/customer/front.jpg')
+            ->and($verification->document_back_url)->toBe('kyc/customer/back.jpg')
+            ->and($verification->selfie_url)->toBe('kyc/customer/selfie.jpg');
     });
 
     it('accepts a null document_back_url', function () {
         $customer = CustomerFactory::new()->create();
 
-        $verification = KycVerification::register(
-            paths: [
-                'document_front_url' => 'kyc/customer/front.jpg',
-                'document_back_url' => null,
-                'document_selfie_url' => 'kyc/customer/selfie.jpg',
-            ],
-            customerId: $customer->id,
-            documentType: DocumentTypeEnum::Cpf,
-            documentNumber: '52998224725',
-        );
+        $paths = KycDocumentStorageData::from([
+            'document_front_url' => 'kyc/customer/front.jpg',
+            'document_selfie_url' => 'kyc/customer/selfie.jpg',
+        ]);
+
+        $verification = $customer->kycVerifications()->create([
+            'document_type' => DocumentTypeEnum::Cnh,
+            'document_number' => '12345678901',
+            'document_front_url' => $paths->documentFrontUrl,
+            'selfie_url' => $paths->documentSelfieUrl,
+        ]);
 
         expect($verification->document_back_url)->toBeNull();
     });

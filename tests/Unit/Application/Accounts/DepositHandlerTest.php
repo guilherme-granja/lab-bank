@@ -1,10 +1,10 @@
 <?php
 
+use Database\Factories\AccountFactory;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Str;
 use Src\Application\Accounts\DataObjects\DepositData;
 use Src\Application\Accounts\Handlers\DepositHandler;
-use Src\Domain\Accounts\Enums\AccountTypeEnum;
 use Src\Domain\Accounts\Exceptions\AccountNotActiveException;
 use Src\Domain\Accounts\Exceptions\AccountNotFoundException;
 use Src\Domain\Accounts\Models\Account;
@@ -24,12 +24,15 @@ beforeEach(function () {
 
 function makeActiveAccountWithBalance(): Account
 {
-    $account = Account::register('11111111-1111-1111-1111-111111111111', AccountTypeEnum::Checking, '1000000999');
+    $account = AccountFactory::new()->create();
     $account->save();
     $account->pullDomainEvents();
 
-    $balance = AccountBalance::register($account);
-    $balance->save();
+    $account->balance()->create([
+        'available_balance' => 0,
+        'blocked_amount' => 0,
+        'last_updated_at' => now(),
+    ]);
 
     return $account->refresh();
 }
@@ -50,9 +53,9 @@ describe('DepositHandler', function () {
         ($this->handler)(new DepositData(accountId: $account->id, amount: 1000, description: 'deposit'));
 
         $transaction = Transaction::where('origin_account_id', $account->id)->first();
-        expect($transaction)->not->toBeNull();
-        expect($transaction->status)->toBeInstanceOf(Completed::class);
-        expect($transaction->amount)->toBe(1000);
+        expect($transaction)->not->toBeNull()
+            ->and($transaction->status)->toBeInstanceOf(Completed::class)
+            ->and($transaction->amount)->toBe(1000);
     });
 
     it('persists a credit LedgerEntry with balance_after', function () {
@@ -61,9 +64,9 @@ describe('DepositHandler', function () {
         ($this->handler)(new DepositData(accountId: $account->id, amount: 2500, description: 'top-up'));
 
         $entry = LedgerEntry::where('account_id', $account->id)->first();
-        expect($entry)->not->toBeNull();
-        expect($entry->amount)->toBe(2500);
-        expect($entry->balance_after)->toBe(2500);
+        expect($entry)->not->toBeNull()
+            ->and($entry->amount)->toBe(2500)
+            ->and($entry->balance_after)->toBe(2500);
     });
 
     it('updates the account timestamp after deposit', function () {
@@ -102,7 +105,7 @@ describe('DepositHandler', function () {
             // expected
         }
 
-        expect(AccountBalance::where('account_id', $account->id)->value('available_balance'))->toBe(0);
-        expect(Transaction::where('origin_account_id', $account->id)->count())->toBe(0);
+        expect(AccountBalance::where('account_id', $account->id)->value('available_balance'))->toBe(0)
+            ->and(Transaction::where('origin_account_id', $account->id)->count())->toBe(0);
     });
 });

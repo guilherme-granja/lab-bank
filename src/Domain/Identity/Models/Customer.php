@@ -5,6 +5,7 @@ namespace Src\Domain\Identity\Models;
 use Illuminate\Database\Eloquent\Attributes\ObservedBy;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
@@ -13,6 +14,7 @@ use Spatie\ModelStates\Exceptions\CouldNotPerformTransition;
 use Spatie\ModelStates\HasStates;
 use Src\Domain\Identity\Events\Customer\CustomerActivatedEvent;
 use Src\Domain\Identity\Events\Customer\CustomerBlockedEvent;
+use Src\Domain\Identity\Events\Customer\CustomerRegisteredEvent;
 use Src\Domain\Identity\Events\Customer\KycApprovedEvent;
 use Src\Domain\Identity\Events\Customer\KycRejectedEvent;
 use Src\Domain\Identity\Observers\CustomerObserver;
@@ -48,6 +50,7 @@ use Src\Shared\Traits\AggregateRoot;
 class Customer extends Model
 {
     use AggregateRoot;
+    use HasFactory;
     use HasStates;
     use HasUuids;
     use SoftDeletes;
@@ -79,6 +82,13 @@ class Customer extends Model
         return $this->hasMany(CustomerAddress::class);
     }
 
+    public function registerEvent(): void
+    {
+        $this->recordEvent(new CustomerRegisteredEvent($this));
+
+        $this->fireModelEvent('created', false);
+    }
+
     /**
      * @throws CouldNotPerformTransition
      */
@@ -92,9 +102,9 @@ class Customer extends Model
      */
     public function approveKyc(): void
     {
-        $this->kyc_status->transitionTo(Approved::class);
-
         $this->recordEvent(new KycApprovedEvent($this));
+
+        $this->kyc_status->transitionTo(Approved::class);
     }
 
     /**
@@ -102,9 +112,9 @@ class Customer extends Model
      */
     public function rejectKyc(string $reason): void
     {
-        $this->kyc_status->transitionTo(Rejected::class);
-
         $this->recordEvent(new KycRejectedEvent($this, $reason));
+
+        $this->kyc_status->transitionTo(Rejected::class);
     }
 
     /**
@@ -112,9 +122,9 @@ class Customer extends Model
      */
     public function block(string $reason): void
     {
-        $this->status->transitionTo(Blocked::class);
-
         $this->recordEvent(new CustomerBlockedEvent($this, $reason));
+
+        $this->status->transitionTo(Blocked::class);
     }
 
     public function canOperate(): bool
@@ -134,8 +144,8 @@ class Customer extends Model
      */
     public function activateAccount(): void
     {
-        $this->status->transitionTo(Active::class);
-
         $this->recordEvent(new CustomerActivatedEvent($this));
+
+        $this->status->transitionTo(Active::class);
     }
 }

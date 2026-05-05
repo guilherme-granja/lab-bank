@@ -39,6 +39,8 @@ readonly class RegisterCustomerHandler
                 'nationality' => $customerData->nationality,
             ]);
 
+            $customer->registerEvent();
+
             $customer->customerAddresses()->create([
                 'zip_code' => $customerData->address->zipCode,
                 'street' => $customerData->address->street,

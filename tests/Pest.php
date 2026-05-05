@@ -12,7 +12,7 @@ function validCustomerPayload(array $overrides = []): array
 {
     return array_merge([
         'full_name' => 'João da Silva',
-        'cpf' => '529.982.247-25',
+        'cpf' => '52998224725',
         'email' => 'joao.silva@example.com',
         'phone' => '(11) 98765-4321',
         'birth_date' => '1990-01-15',

@@ -1,9 +1,9 @@
 <?php
 
+use Database\Factories\AccountFactory;
 use Illuminate\Support\Facades\Event;
 use Src\Domain\Accounts\Enums\AccountTypeEnum;
 use Src\Domain\Accounts\Events\Account\AccountOpenedEvent;
-use Src\Domain\Accounts\Models\Account;
 
 beforeEach(function () {
     Event::fake();
@@ -11,19 +11,19 @@ beforeEach(function () {
 
 describe('AccountOpenedEvent', function () {
     it('toPayload returns the expected fields', function () {
-        $account = Account::register('customer-uuid', AccountTypeEnum::Checking, '1000000001');
+        $account = AccountFactory::new()->create();
         $account->pullDomainEvents();
         $event = new AccountOpenedEvent($account);
 
         $payload = $event->toPayload();
 
-        expect($payload)->toHaveKeys(['account_number', 'branch', 'bank_code', 'account_type']);
-        expect($payload['account_number'])->toBe('1000000001');
-        expect($payload['account_type'])->toBe(AccountTypeEnum::Checking->value);
+        expect($payload)->toHaveKeys(['account_number', 'branch', 'bank_code', 'account_type'])
+            ->and($payload['account_number'])->toBe('1000000123')
+            ->and($payload['account_type'])->toBe(AccountTypeEnum::Checking->value);
     });
 
     it('aggregateId is the account id', function () {
-        $account = Account::register('customer-uuid', AccountTypeEnum::Checking, '1000000001');
+        $account = AccountFactory::new()->create();
         $account->pullDomainEvents();
         $event = new AccountOpenedEvent($account);
 
@@ -31,7 +31,7 @@ describe('AccountOpenedEvent', function () {
     });
 
     it('aggregateType is Account', function () {
-        $account = Account::register('customer-uuid', AccountTypeEnum::Checking, '1000000001');
+        $account = AccountFactory::new()->create();
         $account->pullDomainEvents();
         $event = new AccountOpenedEvent($account);
 

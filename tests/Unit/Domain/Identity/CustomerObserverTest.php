@@ -11,13 +11,6 @@ use Src\Interfaces\Events\Identity\CustomerWasRegistered;
 use Src\Interfaces\Events\Identity\KycWasApproved;
 use Src\Interfaces\Events\Identity\KycWasRejected;
 
-/**
- * These tests verify that the CustomerObserver correctly maps domain events
- * to interface events when a Customer model is saved.
- *
- * We must create customers via Customer::register() (not the factory) to ensure
- * domain events are recorded on the model before it is persisted.
- */
 function makeRegisterData(array $overrides = []): RegisterCustomerData
 {
     static $cpfs = ['52998224725', '11144477735', '00000000191', '01234567890'];
@@ -39,8 +32,8 @@ describe('CustomerObserver', function () {
     it('dispatches CustomerWasRegistered when a new customer is saved', function () {
         Event::fake([CustomerWasRegistered::class]);
 
-        $customer = Customer::register(makeRegisterData());
-        $customer->save();
+        $customer = Customer::create(makeRegisterData()->toArray());
+        $customer->registerEvent();
 
         Event::assertDispatched(CustomerWasRegistered::class);
     });
@@ -61,10 +54,10 @@ describe('CustomerObserver', function () {
         Event::fake([KycWasApproved::class]);
 
         $customer = CustomerFactory::new()->withKycProcessing()->create();
+        $customer->registerEvent();
         $customer->pullDomainEvents();
 
         $customer->approveKyc();
-        $customer->save();
 
         Event::assertDispatched(KycWasApproved::class);
     });
@@ -76,7 +69,6 @@ describe('CustomerObserver', function () {
         $customer->pullDomainEvents();
 
         $customer->rejectKyc('Documents unclear');
-        $customer->save();
 
         Event::assertDispatched(KycWasRejected::class);
     });
@@ -88,7 +80,6 @@ describe('CustomerObserver', function () {
         $customer->pullDomainEvents();
 
         $customer->block('Suspicious activity');
-        $customer->save();
 
         Event::assertDispatched(CustomerWasBlocked::class);
     });
@@ -105,8 +96,7 @@ describe('CustomerObserver', function () {
             KycWasRejected::class,
         ]);
 
-        $customer->full_name = 'Updated Name';
-        $customer->save();
+        $customer->update(['full_name' => 'Updated Name']);
 
         Event::assertNotDispatched(CustomerWasRegistered::class);
         Event::assertNotDispatched(CustomerWasActivated::class);

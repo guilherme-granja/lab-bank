@@ -3,6 +3,7 @@
 use Database\Factories\CustomerFactory;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Event;
+use Src\Application\Identity\DataObjects\KycDocumentStorageData;
 use Src\Application\Identity\DataObjects\SubmitKycDocumentsData;
 use Src\Application\Identity\Handlers\SubmitKycDocumentsHandler;
 use Src\Domain\Identity\Enums\Kyc\DocumentTypeEnum;
@@ -34,11 +35,11 @@ describe('SubmitKycDocumentsHandler', function () {
     it('uploads documents and persists a kyc verification on success', function () {
         $customer = CustomerFactory::new()->create();
 
-        $this->kycDocumentStorage->shouldReceive('uploadKycDocuments')->once()->andReturn([
+        $this->kycDocumentStorage->shouldReceive('uploadKycDocuments')->once()->andReturn(KycDocumentStorageData::from([
             'document_front_url' => 'kyc/id/front.jpg',
             'document_back_url' => 'kyc/id/back.jpg',
             'document_selfie_url' => 'kyc/id/selfie.jpg',
-        ]);
+        ]));
 
         ($this->handler)(($this->makeData)($customer->id));
 

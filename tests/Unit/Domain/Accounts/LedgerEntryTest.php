@@ -7,7 +7,7 @@ use Src\Domain\Accounts\Enums\LedgerEntryCategory;
 use Src\Domain\Accounts\Enums\LedgerEntryTypeEnum;
 use Src\Domain\Accounts\Models\LedgerEntry;
 
-describe('LedgerEntry::register()', function () {
+describe('LedgerEntry::create()', function () {
     it('sets all provided fields', function () {
         $accountId = AccountFactory::new()->create()->id;
         $transactionId = Str::uuid()->toString();

@@ -16,6 +16,7 @@ class AccountFactory extends Factory
             'customer_id' => $this->faker->uuid(),
             'account_number' => '1000000123',
             'account_type' => AccountTypeEnum::Checking,
+            'activated_at' => now(),
         ];
     }
 }

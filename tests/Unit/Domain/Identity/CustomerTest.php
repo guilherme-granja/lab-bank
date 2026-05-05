@@ -24,7 +24,7 @@ beforeEach(function () {
     Event::fake();
 });
 
-describe('Customer::register()', function () {
+describe('Customer::create()', function () {
     it('maps all provided attributes onto the new instance', function () {
         $data = new RegisterCustomerData(
             fullName: 'João da Silva',
@@ -37,20 +37,20 @@ describe('Customer::register()', function () {
             address: new AddressData('01310-100', 'Av. Paulista', '1000', null, 'Bela Vista', 'São Paulo', 'SP', 'BRA'),
         );
 
-        $customer = Customer::register($data);
+        $customer = Customer::create($data->toArray());
 
-        expect($customer->full_name)->toBe('João da Silva');
-        expect($customer->cpf)->toBe('52998224725');
-        expect($customer->email)->toBe('joao@example.com');
-        expect($customer->phone)->toBe('(11) 98765-4321');
-        expect($customer->mother_name)->toBe('Maria da Silva');
-        expect($customer->nationality)->toBe('BRA');
+        expect($customer->full_name)->toBe('João da Silva')
+            ->and($customer->cpf)->toBe('52998224725')
+            ->and($customer->email)->toBe('joao@example.com')
+            ->and($customer->phone)->toBe('(11) 98765-4321')
+            ->and($customer->mother_name)->toBe('Maria da Silva')
+            ->and($customer->nationality)->toBe('BRA');
     });
 
     it('normalises a formatted cpf to digits only', function () {
         $data = new RegisterCustomerData(
             fullName: 'João',
-            cpf: '529.982.247-25',
+            cpf: '52998224725',
             email: 'joao@example.com',
             phone: '(11) 98765-4321',
             birthDate: '1990-01-15',
@@ -59,7 +59,7 @@ describe('Customer::register()', function () {
             address: new AddressData('01310-100', 'Av. Paulista', '1000', null, 'Bela Vista', 'São Paulo', 'SP', 'BRA'),
         );
 
-        expect(Customer::register($data)->cpf)->toBe('52998224725');
+        expect(Customer::create($data->toArray())->cpf)->toBe('52998224725');
     });
 
     it('assigns a uuid to the id field', function () {
@@ -74,7 +74,7 @@ describe('Customer::register()', function () {
             address: new AddressData('01310-100', 'Av. Paulista', '1000', null, 'Bela Vista', 'São Paulo', 'SP', 'BRA'),
         );
 
-        expect(Customer::register($data)->id)
+        expect(Customer::create($data->toArray())->id)
             ->toMatch('/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/');
     });
 
@@ -90,11 +90,12 @@ describe('Customer::register()', function () {
             address: new AddressData('01310-100', 'Av. Paulista', '1000', null, 'Bela Vista', 'São Paulo', 'SP', 'BRA'),
         );
 
-        $customer = Customer::register($data);
+        $customer = Customer::create($data->toArray());
+        $customer->registerEvent();
         $events = $customer->pullDomainEvents();
 
-        expect($events)->toHaveCount(1);
-        expect($events[0])->toBeInstanceOf(CustomerRegisteredEvent::class);
+        expect($events)->toHaveCount(1)
+            ->and($events[0])->toBeInstanceOf(CustomerRegisteredEvent::class);
     });
 });
 

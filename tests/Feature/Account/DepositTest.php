@@ -16,7 +16,11 @@ beforeEach(function () {
 
     $this->account = AccountFactory::new()->create();
 
-    AccountBalance::register($this->account)->save();
+    $this->account->balance()->create([
+        'available_balance' => 0,
+        'blocked_amount' => 0,
+        'last_updated_at' => now(),
+    ]);
 
     $this->headers = ['X-Correlation-ID' => Str::uuid()->toString()];
 });

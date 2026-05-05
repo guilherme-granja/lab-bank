@@ -5,6 +5,7 @@ namespace Src\Domain\Accounts\Models;
 use Illuminate\Database\Eloquent\Attributes\ObservedBy;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
@@ -40,6 +41,7 @@ use Src\Shared\Traits\AggregateRoot;
 class Account extends Model
 {
     use AggregateRoot;
+    use HasFactory;
     use HasStates;
     use HasUuids;
     use SoftDeletes;
@@ -90,18 +92,11 @@ class Account extends Model
         return $query->where('customer_id', $customerId)->exists();
     }
 
-    public static function register(string $customerId, AccountTypeEnum $accountTypeEnum, string $accountNumber): self
+    public function registerEvent(): void
     {
-        $account = new self;
-        $account->id = $account->newUniqueId();
-        $account->customer_id = $customerId;
-        $account->account_number = $accountNumber;
-        $account->account_type = $accountTypeEnum;
-        $account->activated_at = now();
+        $this->recordEvent(new AccountOpenedEvent($this));
 
-        $account->recordEvent(new AccountOpenedEvent($account));
-
-        return $account;
+        $this->fireModelEvent('created', false);
     }
 
     public function canDeposit(): bool
@@ -111,8 +106,8 @@ class Account extends Model
 
     public function deposit(int $amount): void
     {
-        $this->updated_at = now();
-
         $this->recordEvent(new FundsDepositedEvent($this, $amount));
+
+        $this->update(['updated_at' => now()]);
     }
 }

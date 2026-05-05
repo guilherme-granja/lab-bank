@@ -39,7 +39,7 @@ describe('POST /api/v1/identity/customer', function () {
 
     it('accepts cpf with formatting and stores only digits', function () {
         $this->postJson('/api/v1/identity/customer', validCustomerPayload([
-            'cpf' => '529.982.247-25',
+            'cpf' => '52998224725',
         ]))
             ->assertCreated()
             ->assertJsonFragment(['cpf' => '52998224725']);

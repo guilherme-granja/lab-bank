@@ -11,7 +11,7 @@ class KycDocumentStorageData extends Data
 {
     public function __construct(
         public string $documentFrontUrl,
-        public string $documentBackUrl,
+        public ?string $documentBackUrl,
         public string $documentSelfieUrl,
     ) {}
 }
