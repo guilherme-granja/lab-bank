@@ -47,13 +47,13 @@ The application is structured around **DDD vertical slices** combined with **Cle
 Dependency Rule: outer layers depend on inner layers, never the reverse.
 
 ┌─────────────────────────────────────────┐
-│              Interfaces                 │  HTTP controllers, Laravel event wrappers, listeners
+│              Interfaces                 │  HTTP controllers, jobs, listeners, Laravel event wrappers
 ├─────────────────────────────────────────┤
 │             Application                 │  Use-case handlers, DTOs
 ├─────────────────────────────────────────┤
-│           Infrastructure                │  Eloquent repositories, event store, providers
+│           Infrastructure                │  Event store, providers, services, storage
 ├─────────────────────────────────────────┤
-│               Domain                    │  Models, states, events, value objects, contracts
+│               Domain                    │  Models, states, events, value objects
 └─────────────────────────────────────────┘
                   ↑
               Shared/
@@ -70,44 +70,43 @@ Each **domain** (Identity, Accounts, Cards, Investments) is a vertical slice tha
 src/
 ├── Domain/
 │   ├── Identity/
-│   │   ├── Contracts/         # Repository interfaces
 │   │   ├── Enums/
-│   │   ├── Events/            # Plain PHP domain event objects
-│   │   │   ├── Customer/      # CustomerRegisteredEvent, CustomerActivatedEvent, CustomerBlockedEvent
-│   │   │   └── Kyc/           # KycApprovedEvent, KycRejectedEvent
+│   │   │   └── Kyc/           # DocumentTypeEnum
+│   │   ├── Events/
+│   │   │   └── Customer/      # CustomerRegisteredEvent, CustomerActivatedEvent, CustomerBlockedEvent, KycApprovedEvent, KycRejectedEvent
 │   │   ├── Exceptions/
 │   │   ├── Models/            # Customer, CustomerAddress, KycVerification (aggregate roots)
 │   │   ├── Observers/
-│   │   ├── States/            # KycStatus, Status (spatie/laravel-model-states)
+│   │   ├── States/
+│   │   │   ├── Customer/      # Active, Blocked, Closed, PendingKyc
+│   │   │   ├── Kyc/           # Approved, Expired, Pending, Processing, Rejected
+│   │   │   └── KycVerification/ # Approved, Expired, Pending, Processing, Rejected
 │   │   └── ValueObjects/      # Cpf
-│   └── Accounts/
-│       ├── Contracts/
-│       ├── Enums/
-│       ├── Events/
-│       │   ├── Account/       # AccountOpenedEvent
-│       │   └── Transaction/
-│       ├── Exceptions/
-│       ├── Models/            # Account, AccountBalance, LedgerEntry, Transaction
-│       ├── Observers/
-│       └── States/            # AccountStatus, TransactionStatus
+│   ├── Accounts/
+│   │   ├── Enums/
+│   │   ├── Events/
+│   │   │   └── Account/       # AccountOpenedEvent, FundsDepositedEvent
+│   │   ├── Exceptions/
+│   │   ├── Models/            # Account, AccountBalance, LedgerEntry, Transaction
+│   │   ├── Observers/
+│   │   └── States/
+│   │       ├── Account/       # Active, Blocked, Closed, Pending
+│   │       └── Transaction/   # Completed, Failed, Initiated, Processing, Reversed
+│   ├── Cards/                 # (planned)
+│   └── Investments/           # (planned)
 │
 ├── Application/
 │   ├── Identity/
 │   │   ├── DataObjects/       # RegisterCustomerData, ApproveKycData, RejectKycData, ...
-│   │   ├── Handlers/          # RegisterCustomerHandler, ApproveKycHandler, ...
-│   │   ├── Commands/
-│   │   └── Queries/
+│   │   └── Handlers/          # RegisterCustomerHandler, ApproveKycHandler, RejectKycHandler, StartKycReviewHandler, SubmitKycDocumentsHandler
 │   └── Accounts/
-│       ├── DataObjects/       # OpenAccountData
-│       └── Handlers/          # OpenAccountHandler
+│       ├── DataObjects/       # OpenAccountData, DepositData
+│       └── Handlers/          # OpenAccountHandler, DepositHandler
 │
 ├── Infrastructure/
 │   ├── Auth/
 │   ├── EventStore/
 │   ├── Messaging/
-│   ├── Persistence/
-│   │   ├── Identity/          # EloquentCustomerRepository, EloquentKycVerificationRepository, ...
-│   │   └── Accounts/          # EloquentAccountRepository, EloquentAccountBalanceRepository
 │   ├── Providers/
 │   │   ├── IdentityServiceProvider.php
 │   │   └── AccountServiceProvider.php
@@ -115,14 +114,23 @@ src/
 │   └── Storage/
 │
 ├── Interfaces/
+│   ├── Console/
 │   ├── Events/                # Laravel event wrappers (domain event + Eloquent model)
-│   └── Http/
-│       └── Controllers/
-│           ├── Identity/      # RegisterCustomerController, ApproveKycController, ...
-│           └── Accounts/
+│   │   ├── Account/           # AccountWasOpened, FundsWereDeposited
+│   │   └── Identity/          # CustomerWasRegistered, CustomerWasActivated, CustomerWasBlocked, KycWasApproved, KycWasRejected
+│   ├── Http/
+│   │   └── Controllers/
+│   │       ├── Account/       # DepositController
+│   │       └── Identity/      # RegisterCustomerController, ApproveKycController, ...
+│   ├── Jobs/
+│   │   └── Accounts/          # OpenAccountJob
+│   └── Listeners/
+│       ├── Accounts/          # OpenAccountOnKycApprovedListener
+│       └── PersistDomainEvent
 │
 └── Shared/
     ├── Events/                # DomainEvent base class
+    ├── Exceptions/
     ├── Traits/                # AggregateRoot trait
     └── ValueObjects/          # ValueObject base class
 ```
@@ -146,13 +154,15 @@ Manages customer lifecycle and KYC (Know Your Customer) compliance.
 
 `Customer::$status`:
 ```
-pending → active → blocked
+pending_kyc → active → blocked
+                    └→ closed
 ```
 
 `KycVerification::$status`:
 ```
-pending_documents → under_review → approved
-                               └→ rejected
+pending → processing → approved
+                   └→ rejected
+                   └→ expired
 ```
 
 **Handlers (Use Cases)**
@@ -161,18 +171,18 @@ pending_documents → under_review → approved
 |---|---|
 | `RegisterCustomerHandler` | Creates a new customer with address and KYC record |
 | `SubmitKycDocumentsHandler` | Attaches documents to a KYC record |
-| `StartKycReviewHandler` | Moves KYC to `under_review` |
+| `StartKycReviewHandler` | Moves KYC to `processing` |
 | `ApproveKycHandler` | Approves KYC and activates customer |
 | `RejectKycHandler` | Rejects KYC submission |
 
 **HTTP Endpoints** (`routes/identity/identity.php`)
 
 ```
-POST   /customers                          RegisterCustomerController
-POST   /customers/{id}/kyc/documents       SubmitKycDocumentsController
-POST   /customers/{id}/kyc/review          StartReviewController
-POST   /customers/{id}/kyc/approve         ApproveKycController
-POST   /customers/{id}/kyc/reject          RejectKycController
+POST   /identity/customer                                RegisterCustomerController
+POST   /identity/customer/{id}/kyc/documents             SubmitKycDocumentsController
+POST   /identity/customer/{id}/kyc/start-review          StartReviewController
+POST   /identity/customer/{id}/kyc/approve               ApproveKycController
+POST   /identity/customer/{id}/kyc/reject                RejectKycController
 ```
 
 ---
@@ -196,8 +206,9 @@ pending → active → blocked → closed
 
 `Transaction::$status`:
 ```
-pending → completed
-       └→ failed
+initiated → processing → completed
+                     └→ failed
+                     └→ reversed
 ```
 
 **Handlers (Use Cases)**
@@ -205,6 +216,13 @@ pending → completed
 | Handler | Responsibility |
 |---|---|
 | `OpenAccountHandler` | Opens a new bank account for a registered customer |
+| `DepositHandler` | Credits funds to an active account and records ledger entries |
+
+**HTTP Endpoints** (`routes/account/account.php`)
+
+```
+POST   /account/{accountId}/deposit        DepositController
+```
 
 ---
 
