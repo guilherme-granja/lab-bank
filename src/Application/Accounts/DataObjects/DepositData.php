@@ -2,7 +2,6 @@
 
 namespace Src\Application\Accounts\DataObjects;
 
-use Illuminate\Http\Request;
 use Spatie\LaravelData\Attributes\FromRouteParameter;
 use Spatie\LaravelData\Attributes\MapName;
 use Spatie\LaravelData\Attributes\Validation\Min;
@@ -23,14 +22,5 @@ class DepositData extends Data
         public ?string $description,
     ) {
         $this->setCorrelationId(request()->header('X-Correlation-ID'));
-    }
-
-    public static function fromRequest(Request $request): self
-    {
-        return new self(
-            accountId: $request->route('accountId'),
-            amount: $request->input('amount'),
-            description: $request->input('description'),
-        );
     }
 }
