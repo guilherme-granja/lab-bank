@@ -8,11 +8,12 @@ use Spatie\LaravelData\Attributes\MapName;
 use Spatie\LaravelData\Attributes\Validation\Min;
 use Spatie\LaravelData\Data;
 use Spatie\LaravelData\Mappers\SnakeCaseMapper;
+use Src\Shared\Traits\DataObjects\HasCorrelationId;
 
 #[MapName(SnakeCaseMapper::class)]
 class DepositData extends Data
 {
-    private string $correlationId;
+    use HasCorrelationId;
 
     public function __construct(
         #[FromRouteParameter('accountId')]
@@ -21,7 +22,7 @@ class DepositData extends Data
         public int $amount,
         public ?string $description,
     ) {
-        $this->correlationId = request()->header('X-Correlation-ID');
+        $this->setCorrelationId(request()->header('X-Correlation-ID'));
     }
 
     public static function fromRequest(Request $request): self
@@ -31,10 +32,5 @@ class DepositData extends Data
             amount: $request->input('amount'),
             description: $request->input('description'),
         );
-    }
-
-    public function getCorrelationId()
-    {
-        return $this->correlationId;
     }
 }
