@@ -19,7 +19,7 @@ class DepositHandler
     /**
      * @throws Throwable
      */
-    public function __invoke(DepositData $data): void
+    public function handle(DepositData $data): void
     {
         $account = Account::find($data->accountId);
 

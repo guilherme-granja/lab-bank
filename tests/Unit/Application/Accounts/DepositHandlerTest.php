@@ -41,7 +41,7 @@ describe('DepositHandler', function () {
     it('credits the account balance by the deposited amount', function () {
         $account = makeActiveAccountWithBalance();
 
-        ($this->handler)(new DepositData(accountId: $account->id, amount: 5000, description: 'salary'));
+        ($this->handler)->handle(new DepositData(accountId: $account->id, amount: 5000, description: 'salary'));
 
         $balance = AccountBalance::where('account_id', $account->id)->first();
         expect($balance->available_balance)->toBe(5000);
@@ -50,7 +50,7 @@ describe('DepositHandler', function () {
     it('persists a Transaction in Completed state', function () {
         $account = makeActiveAccountWithBalance();
 
-        ($this->handler)(new DepositData(accountId: $account->id, amount: 1000, description: 'deposit'));
+        ($this->handler)->handle(new DepositData(accountId: $account->id, amount: 1000, description: 'deposit'));
 
         $transaction = Transaction::where('origin_account_id', $account->id)->first();
         expect($transaction)->not->toBeNull()
@@ -61,7 +61,7 @@ describe('DepositHandler', function () {
     it('persists a credit LedgerEntry with balance_after', function () {
         $account = makeActiveAccountWithBalance();
 
-        ($this->handler)(new DepositData(accountId: $account->id, amount: 2500, description: 'top-up'));
+        ($this->handler)->handle(new DepositData(accountId: $account->id, amount: 2500, description: 'top-up'));
 
         $entry = LedgerEntry::where('account_id', $account->id)->first();
         expect($entry)->not->toBeNull()
@@ -74,14 +74,14 @@ describe('DepositHandler', function () {
         $before = $account->updated_at;
 
         sleep(1);
-        ($this->handler)(new DepositData(accountId: $account->id, amount: 100, description: 'd'));
+        ($this->handler)->handle(new DepositData(accountId: $account->id, amount: 100, description: 'd'));
 
         $account->refresh();
         expect($account->updated_at->gt($before))->toBeTrue();
     });
 
     it('throws AccountNotFoundException when the account does not exist', function () {
-        expect(fn () => ($this->handler)(new DepositData(accountId: '00000000-0000-0000-0000-000000000000', amount: 100, description: 'd')))
+        expect(fn () => ($this->handler)->handle(new DepositData(accountId: '00000000-0000-0000-0000-000000000000', amount: 100, description: 'd')))
             ->toThrow(AccountNotFoundException::class);
     });
 
@@ -90,7 +90,7 @@ describe('DepositHandler', function () {
         $account->status->transitionTo(Blocked::class);
         $account->save();
 
-        expect(fn () => ($this->handler)(new DepositData(accountId: $account->id, amount: 100, description: 'd')))
+        expect(fn () => ($this->handler)->handle(new DepositData(accountId: $account->id, amount: 100, description: 'd')))
             ->toThrow(AccountNotActiveException::class);
     });
 
@@ -100,7 +100,7 @@ describe('DepositHandler', function () {
         $account->save();
 
         try {
-            ($this->handler)(new DepositData(accountId: $account->id, amount: 999, description: 'd'));
+            ($this->handler)->handle(new DepositData(accountId: $account->id, amount: 999, description: 'd'));
         } catch (AccountNotActiveException) {
             // expected
         }
